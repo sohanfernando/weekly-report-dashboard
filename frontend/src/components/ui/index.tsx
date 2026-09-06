@@ -194,7 +194,12 @@ export function Select({
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean }) {
   return (
-    <div className="group relative w-full">
+    // className lands on both the wrapper and the select. The wrapper is the
+    // layout box the chevron is positioned against, so a width passed by a
+    // caller has to reach it — otherwise the wrapper stays full width, the
+    // select shrinks, and the icon strands itself at the far right. Padding
+    // classes stay symmetric, so the two keep the same centre line.
+    <div className={cn("group relative w-full", className)}>
       <select
         {...props}
         aria-invalid={invalid || undefined}

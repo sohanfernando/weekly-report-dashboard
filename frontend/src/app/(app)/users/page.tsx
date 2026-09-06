@@ -155,7 +155,7 @@ export default function UsersPage() {
                       <Td className="text-secondary">{user.jobTitle ?? "—"}</Td>
                       <Td className="w-36">
                         <Select
-                          className="h-8 py-1 text-xs"
+                          className="h-8 text-xs"
                           value={user.role}
                           /* Changing your own role is refused by the API, so do
                              not offer it and invite a 409. */
