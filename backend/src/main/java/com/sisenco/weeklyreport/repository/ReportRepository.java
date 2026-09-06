@@ -23,6 +23,9 @@ public interface ReportRepository extends JpaRepository<Report, Long>, JpaSpecif
 
     boolean existsByUserIdAndWeekStart(Long userId, LocalDate weekStart);
 
+    /** Guards project deletion: a project any report references may only be archived. */
+    boolean existsByProjectId(Long projectId);
+
     /** Ids of members who already have a report for a week, for compliance stats. */
     @Query("select r.user.id from Report r where r.weekStart = :weekStart")
     List<Long> findUserIdsWithReportForWeek(@Param("weekStart") LocalDate weekStart);

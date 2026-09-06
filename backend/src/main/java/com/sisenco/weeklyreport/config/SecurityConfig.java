@@ -67,7 +67,7 @@ public class SecurityConfig {
                         .permitAll()
                         // Manager-only areas are matched here as a coarse first
                         // gate; per-row rules still run in the services.
-                        .requestMatchers("/api/users/**")
+                        .requestMatchers("/api/users/**", "/api/manager/**")
                         .hasRole("MANAGER")
                         .anyRequest()
                         .authenticated())
