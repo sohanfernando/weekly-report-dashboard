@@ -13,7 +13,7 @@ const PUBLIC_PATHS = ["/login", "/register"];
  * design. Every real access decision is made by the API; this is purely to
  * avoid a pointless render.
  */
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSession = request.cookies.has(SESSION_COOKIE);
   const isPublic = PUBLIC_PATHS.some((path) => pathname.startsWith(path));
