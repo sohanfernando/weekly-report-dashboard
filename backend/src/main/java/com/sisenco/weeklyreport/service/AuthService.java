@@ -1,7 +1,9 @@
 package com.sisenco.weeklyreport.service;
 
+import com.sisenco.weeklyreport.dto.request.ChangePasswordRequest;
 import com.sisenco.weeklyreport.dto.request.LoginRequest;
 import com.sisenco.weeklyreport.dto.request.RegisterRequest;
+import com.sisenco.weeklyreport.dto.request.UpdateProfileRequest;
 import com.sisenco.weeklyreport.dto.response.UserResponse;
 
 /**
@@ -36,6 +38,20 @@ public interface AuthService {
 
     /** The profile of the currently authenticated caller. */
     UserResponse currentUser(Long userId);
+
+    /** Updates the caller's own name and job title. Email and role are not editable here. */
+    UserResponse updateProfile(Long userId, UpdateProfileRequest request);
+
+    /**
+     * Changes the caller's own password after re-checking the current one.
+     *
+     * <p>Requiring the current password stops someone who walks up to an
+     * unlocked screen from locking the real owner out.
+     *
+     * @throws com.sisenco.weeklyreport.exception.BadRequestException if the
+     *     current password is wrong
+     */
+    void changePassword(Long userId, ChangePasswordRequest request);
 
     /** The signed token plus the user it identifies. */
     record AuthResult(String token, UserResponse user) {}

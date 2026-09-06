@@ -162,6 +162,11 @@ preflight in normal use. Point it elsewhere with `BACKEND_URL` in
 BACKEND_URL=http://localhost:8080
 ```
 
+> **`BACKEND_URL` is read when the rewrite is compiled, not when the server
+> boots.** `npm run dev` picks it up on restart, but a production build bakes
+> the destination into the route manifest — so set it *before* `npm run build`,
+> not before `npm run start`. Changing it afterwards requires a rebuild.
+
 ---
 
 ## Testing

@@ -95,6 +95,26 @@ export function useRegister() {
   });
 }
 
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { name: string; jobTitle?: string | null }) =>
+      api.patch<User>("/auth/me", body),
+    onSuccess: (user) => {
+      // Write straight into the session cache so the sidebar updates at once.
+      queryClient.setQueryData(keys.me, user);
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (body: { currentPassword: string; newPassword: string }) =>
+      api.post<void>("/auth/change-password", body),
+  });
+}
+
 export function useLogout() {
   const queryClient = useQueryClient();
   return useMutation({

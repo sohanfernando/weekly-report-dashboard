@@ -2,9 +2,12 @@ package com.sisenco.weeklyreport.service.impl;
 
 import com.sisenco.weeklyreport.domain.Role;
 import com.sisenco.weeklyreport.domain.User;
+import com.sisenco.weeklyreport.dto.request.ChangePasswordRequest;
 import com.sisenco.weeklyreport.dto.request.LoginRequest;
 import com.sisenco.weeklyreport.dto.request.RegisterRequest;
+import com.sisenco.weeklyreport.dto.request.UpdateProfileRequest;
 import com.sisenco.weeklyreport.dto.response.UserResponse;
+import com.sisenco.weeklyreport.exception.BadRequestException;
 import com.sisenco.weeklyreport.exception.ConflictException;
 import com.sisenco.weeklyreport.exception.NotFoundException;
 import com.sisenco.weeklyreport.repository.UserRepository;
@@ -79,5 +82,32 @@ public class AuthServiceImpl implements AuthService {
                 .findById(userId)
                 .map(UserResponse::from)
                 .orElseThrow(() -> NotFoundException.of("User", userId));
+    }
+
+    @Override
+    @Transactional
+    public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> NotFoundException.of("User", userId));
+        user.setName(request.name().trim());
+        user.setJobTitle(request.jobTitle() == null || request.jobTitle().isBlank()
+                ? null
+                : request.jobTitle().trim());
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> NotFoundException.of("User", userId));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Your current password is not correct");
+        }
+        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("The new password must be different from the current one");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
     }
 }

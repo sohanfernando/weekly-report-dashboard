@@ -1,8 +1,10 @@
 package com.sisenco.weeklyreport.web;
 
 import com.sisenco.weeklyreport.dto.response.UserResponse;
+import com.sisenco.weeklyreport.dto.request.ChangePasswordRequest;
 import com.sisenco.weeklyreport.dto.request.LoginRequest;
 import com.sisenco.weeklyreport.dto.request.RegisterRequest;
+import com.sisenco.weeklyreport.dto.request.UpdateProfileRequest;
 import com.sisenco.weeklyreport.security.AppUserPrincipal;
 import com.sisenco.weeklyreport.security.AuthCookieFactory;
 import com.sisenco.weeklyreport.service.AuthService;
@@ -13,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -62,5 +65,21 @@ public class AuthController {
     @GetMapping("/me")
     public UserResponse me(@AuthenticationPrincipal AppUserPrincipal principal) {
         return authService.currentUser(principal.getId());
+    }
+
+    /** Edits the caller's own profile. Never anybody else's — the id comes from the session. */
+    @PatchMapping("/me")
+    public UserResponse updateProfile(
+            @Valid @RequestBody UpdateProfileRequest request,
+            @AuthenticationPrincipal AppUserPrincipal principal) {
+        return authService.updateProfile(principal.getId(), request);
+    }
+
+    @PostMapping("/change-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal AppUserPrincipal principal) {
+        authService.changePassword(principal.getId(), request);
     }
 }
