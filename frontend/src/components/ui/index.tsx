@@ -2,8 +2,8 @@
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { ChevronDown, Loader2 } from "lucide-react";
-import { useRef } from "react";
+import { ChevronDown, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRef, useState, type ComponentProps } from "react";
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -126,9 +126,15 @@ export function Label({
   );
 }
 
+/*
+ * One focus treatment for every field: the border turns brand, and a soft halo
+ * sits just outside it. The halo is deliberately translucent — a second solid
+ * line at full strength reads as two borders rather than one focused control.
+ */
 const FIELD_BASE =
   "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary " +
-  "placeholder:text-secondary/60 focus:border-brand focus:ring-1 focus:ring-brand " +
+  "placeholder:text-secondary/60 outline-none " +
+  "focus:border-brand focus:ring-2 focus:ring-brand/20 " +
   "disabled:opacity-60";
 
 export function Input({
@@ -142,7 +148,8 @@ export function Input({
       aria-invalid={invalid || undefined}
       className={cn(
         FIELD_BASE,
-        invalid && "border-status-missing focus:border-status-missing focus:ring-status-missing",
+        invalid &&
+          "border-status-missing focus:border-status-missing focus:ring-status-missing/20",
         className,
       )}
     />
@@ -161,7 +168,8 @@ export function Textarea({
       className={cn(
         FIELD_BASE,
         "min-h-24 resize-y",
-        invalid && "border-status-missing focus:border-status-missing focus:ring-status-missing",
+        invalid &&
+          "border-status-missing focus:border-status-missing focus:ring-status-missing/20",
         className,
       )}
     />
@@ -203,6 +211,51 @@ export function Select({
         aria-hidden
         className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-secondary transition-transform duration-200 group-focus-within:rotate-180"
       />
+    </div>
+  );
+}
+
+/**
+ * A password field with a show/hide toggle.
+ *
+ * Typed as ComponentProps rather than InputHTMLAttributes so `ref` is part of
+ * the props: react-hook-form's register() spreads a ref in, and without it the
+ * library never sees the element.
+ *
+ * The toggle stays in the tab order. Hiding it from keyboard users would make
+ * the feature reachable only by mouse, which defeats the point — checking a
+ * typo is exactly what someone does after a failed sign-in.
+ */
+export function PasswordInput({
+  className,
+  invalid,
+  ...props
+}: ComponentProps<"input"> & { invalid?: boolean }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative w-full">
+      <input
+        {...props}
+        type={visible ? "text" : "password"}
+        aria-invalid={invalid || undefined}
+        className={cn(
+          FIELD_BASE,
+          "pr-10",
+          invalid &&
+            "border-status-missing focus:border-status-missing focus:ring-status-missing/20",
+          className,
+        )}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((shown) => !shown)}
+        aria-label={visible ? "Hide password" : "Show password"}
+        aria-pressed={visible}
+        className="absolute right-1.5 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-secondary transition-colors hover:bg-surface-muted hover:text-primary"
+      >
+        {visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+      </button>
     </div>
   );
 }

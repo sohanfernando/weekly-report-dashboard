@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Alert, Button, Card, CardBody, Field, Input } from "@/components/ui";
+import { Alert, Button, Card, CardBody, Field, Input, PasswordInput } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useLogin, useRegister } from "@/lib/queries";
 
@@ -102,9 +102,8 @@ export default function RegisterPage() {
             </Field>
 
             <Field label="Password" htmlFor="password" error={errors.password?.message} required>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="new-password"
                 invalid={!!errors.password}
                 {...register("password")}
@@ -112,9 +111,8 @@ export default function RegisterPage() {
             </Field>
 
             <Field label="Confirm password" htmlFor="confirm" error={errors.confirm?.message} required>
-              <Input
+              <PasswordInput
                 id="confirm"
-                type="password"
                 autoComplete="new-password"
                 invalid={!!errors.confirm}
                 {...register("confirm")}

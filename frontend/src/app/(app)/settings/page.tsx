@@ -12,6 +12,7 @@ import {
   Input,
   Loading,
   PageHeader,
+  PasswordInput,
 } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { shortDate } from "@/lib/format";
@@ -153,9 +154,8 @@ function PasswordCard() {
         {done && <Alert tone="success">Password changed.</Alert>}
 
         <Field label="Current password" htmlFor="current-password" required>
-          <Input
+          <PasswordInput
             id="current-password"
-            type="password"
             autoComplete="current-password"
             value={current}
             onChange={(event) => {
@@ -166,9 +166,8 @@ function PasswordCard() {
         </Field>
 
         <Field label="New password" htmlFor="new-password" error={nextError} required>
-          <Input
+          <PasswordInput
             id="new-password"
-            type="password"
             autoComplete="new-password"
             value={next}
             invalid={!!nextError}
@@ -180,9 +179,8 @@ function PasswordCard() {
         </Field>
 
         <Field label="Confirm new password" htmlFor="confirm-password" error={confirmError} required>
-          <Input
+          <PasswordInput
             id="confirm-password"
-            type="password"
             autoComplete="new-password"
             value={confirm}
             invalid={!!confirmError}

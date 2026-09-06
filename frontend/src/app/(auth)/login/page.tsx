@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Alert, Button, Card, CardBody, Field, Input } from "@/components/ui";
+import { Alert, Button, Card, CardBody, Field, Input, PasswordInput } from "@/components/ui";
 import { ApiError } from "@/lib/api";
 import { useLogin } from "@/lib/queries";
 
@@ -71,9 +71,8 @@ function LoginForm() {
             </Field>
 
             <Field label="Password" htmlFor="password" error={errors.password?.message} required>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
                 invalid={!!errors.password}

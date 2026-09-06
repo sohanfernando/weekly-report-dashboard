@@ -78,6 +78,20 @@ h4 {
   outline-offset: 2px;
 }
 
+/*
+ * Form controls opt out, because they draw their own focus state: a brand
+ * border plus a soft halo. Leaving the global outline on as well stacked a
+ * second and third indigo ring around every input and select.
+ */
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none;
+}
+
 /* Number inputs: hide the spinners, which fight with narrow table cells. */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {

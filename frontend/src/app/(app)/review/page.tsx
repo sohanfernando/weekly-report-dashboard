@@ -9,6 +9,7 @@ import {
   Card,
   EmptyState,
   Field,
+  Input,
   Loading,
   PageHeader,
   Select,
@@ -101,29 +102,26 @@ export default function ReviewQueuePage() {
         </Field>
 
         <Field label="Week starting" className="w-44">
-          <input
+          <Input
             type="date"
             value={filters.weekStart ?? ""}
             onChange={(event) => update({ weekStart: event.target.value })}
-            className="w-full rounded-lg bg-surface px-3 py-2 text-sm ring-1 ring-border focus:ring-2 focus:ring-brand"
           />
         </Field>
 
         <Field label="From" className="w-40">
-          <input
+          <Input
             type="date"
             value={filters.from ?? ""}
             onChange={(event) => update({ from: event.target.value })}
-            className="w-full rounded-lg bg-surface px-3 py-2 text-sm ring-1 ring-border focus:ring-2 focus:ring-brand"
           />
         </Field>
 
         <Field label="To" className="w-40">
-          <input
+          <Input
             type="date"
             value={filters.to ?? ""}
             onChange={(event) => update({ to: event.target.value })}
-            className="w-full rounded-lg bg-surface px-3 py-2 text-sm ring-1 ring-border focus:ring-2 focus:ring-brand"
           />
         </Field>
       </div>
