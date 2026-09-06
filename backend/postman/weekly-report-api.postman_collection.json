@@ -1,0 +1,361 @@
+{
+  "info": {
+    "_postman_id": "8f2c1d10-4b7a-4e21-9f3c-1a2b3c4d5e6f",
+    "name": "Weekly Report API - Auth",
+    "description": "Authentication and session handling for the Weekly Report Generator.\n\nThe API never returns the JWT in a response body. It is written into an httpOnly cookie named `wr_token`, and Postman's cookie jar replays it automatically on later requests, so no Authorization header is needed anywhere in this collection.\n\nRun the requests top to bottom, or use the Collection Runner. Each request asserts its own expected status, so a red result means a real regression.\n\nSet `baseUrl` in the collection variables if the backend is not on http://localhost:8080.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "postman.user@example.com",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "password123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Health check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('backend is up', () => pm.response.to.have.status(200));",
+              "pm.test('status is UP', () => pm.expect(pm.response.json().status).to.eql('UP'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/actuator/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["actuator", "health"]
+        },
+        "description": "Public endpoint. If this fails, the backend is not running."
+      }
+    },
+    {
+      "name": "1. Me - before login (expect 401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('unauthenticated access is refused', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "me"]
+        },
+        "description": "No cookie yet, so the filter chain rejects this before it reaches a controller.\n\nIf you have already logged in during this Postman session, clear the cookie jar first (the Cookies link under the Send button) or this will return 200."
+      }
+    },
+    {
+      "name": "2. Register (expect 201)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 409) {",
+              "    pm.test('account already exists from an earlier run', () => true);",
+              "} else {",
+              "    pm.test('account created', () => pm.response.to.have.status(201));",
+              "    const body = pm.response.json();",
+              "    pm.test('role is forced to MEMBER', () => pm.expect(body.role).to.eql('MEMBER'));",
+              "    pm.test('no password field is returned', () => {",
+              "        pm.expect(body).to.not.have.property('password');",
+              "        pm.expect(body).to.not.have.property('passwordHash');",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman User\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"jobTitle\": \"QA Engineer\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register"]
+        },
+        "description": "Note there is no role field in the request body, and none is accepted. Signup always produces a MEMBER; only an admin can promote someone. Returns 409 if the account already exists."
+      }
+    },
+    {
+      "name": "3. Register duplicate (expect 409)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('duplicate email is rejected', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman User\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register"]
+        },
+        "description": "The unique constraint on users.email is enforced in the service and backed by the database."
+      }
+    },
+    {
+      "name": "4. Register invalid payload (expect 400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('invalid payload is rejected', () => pm.response.to.have.status(400));",
+              "const body = pm.response.json();",
+              "pm.test('per-field errors are returned', () => {",
+              "    pm.expect(body).to.have.property('errors');",
+              "    pm.expect(Object.keys(body.errors).length).to.be.above(0);",
+              "});",
+              "console.log('field errors:', JSON.stringify(body.errors, null, 2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\",\n  \"email\": \"not-an-email\",\n  \"password\": \"short\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register"]
+        },
+        "description": "Bean Validation rejects all three fields. The response is an RFC 9457 problem document with an `errors` map keyed by field name, which is what the frontend form binds its messages to. Open the Postman console to see it."
+      }
+    },
+    {
+      "name": "5. Login wrong password (expect 401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('wrong password is refused', () => pm.response.to.have.status(401));",
+              "pm.test('message does not reveal whether the account exists', () => {",
+              "    pm.expect(pm.response.json().detail).to.eql('Invalid email or password');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"definitely-wrong\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "description": "Compare this response with request 6. They are byte-identical, which is deliberate: a different message for 'no such user' would let an attacker enumerate who works here."
+      }
+    },
+    {
+      "name": "6. Login unknown account (expect 401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('unknown account is refused', () => pm.response.to.have.status(401));",
+              "pm.test('same message as a wrong password', () => {",
+              "    pm.expect(pm.response.json().detail).to.eql('Invalid email or password');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"nobody-at-all@example.com\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "7. Login (expect 200 + cookie)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('login succeeds', () => pm.response.to.have.status(200));",
+              "",
+              "const setCookie = pm.response.headers.get('Set-Cookie') || '';",
+              "pm.test('session cookie is issued', () => pm.expect(setCookie).to.include('wr_token='));",
+              "pm.test('cookie is httpOnly', () => pm.expect(setCookie).to.include('HttpOnly'));",
+              "pm.test('cookie sets SameSite', () => pm.expect(setCookie).to.include('SameSite'));",
+              "",
+              "const body = pm.response.json();",
+              "pm.test('token is NOT in the response body', () => {",
+              "    pm.expect(body).to.not.have.property('token');",
+              "    pm.expect(body).to.not.have.property('accessToken');",
+              "});",
+              "pm.collectionVariables.set('userId', body.id);",
+              "console.log('Set-Cookie:', setCookie);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "description": "The body carries the user profile only. The JWT goes into the httpOnly `wr_token` cookie, which Postman stores in its cookie jar and replays on every later request to this host.\n\nCheck the Postman console for the full Set-Cookie header, or click the Cookies link under the Send button."
+      }
+    },
+    {
+      "name": "8. Me - after login (expect 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('authenticated request succeeds', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('returns the logged-in user', () => {",
+              "    pm.expect(body.email).to.eql(pm.collectionVariables.get('email'));",
+              "});",
+              "pm.test('password hash never leaves the server', () => {",
+              "    pm.expect(body).to.not.have.property('passwordHash');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "me"]
+        },
+        "description": "No Authorization header is set on this request. It works purely because Postman replayed the cookie, which is exactly how the browser will behave."
+      }
+    },
+    {
+      "name": "9. Logout (expect 204)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('logout succeeds', () => pm.response.to.have.status(204));",
+              "const setCookie = pm.response.headers.get('Set-Cookie') || '';",
+              "pm.test('cookie is expired immediately', () => {",
+              "    pm.expect(setCookie).to.match(/Max-Age=0|Expires=Thu, 01 Jan 1970/);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/logout",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "logout"]
+        },
+        "description": "Returns a same-named cookie with Max-Age=0, which tells the browser to drop it. Nothing is invalidated server-side because the token is stateless."
+      }
+    },
+    {
+      "name": "10. Me - after logout (expect 401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('session is dead after logout', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "me"]
+        },
+        "description": "Proves the logout actually cleared the cookie rather than just returning a success status."
+      }
+    }
+  ]
+}
