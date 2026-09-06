@@ -26,6 +26,21 @@ public interface ReportRepository extends JpaRepository<Report, Long>, JpaSpecif
     /** Guards project deletion: a project any report references may only be archived. */
     boolean existsByProjectId(Long projectId);
 
+    /**
+     * Every report filed for one week, with the associations the dashboard reads,
+     * so building the per-member status list costs one query rather than one per
+     * team member.
+     */
+    @Query(
+            """
+            select distinct r from Report r
+              join fetch r.user
+              left join fetch r.project
+              left join fetch r.currentVersion
+            where r.weekStart = :weekStart
+            """)
+    List<Report> findByWeekStartWithDetails(@Param("weekStart") LocalDate weekStart);
+
     /** Ids of members who already have a report for a week, for compliance stats. */
     @Query("select r.user.id from Report r where r.weekStart = :weekStart")
     List<Long> findUserIdsWithReportForWeek(@Param("weekStart") LocalDate weekStart);
