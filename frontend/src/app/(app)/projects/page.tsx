@@ -2,6 +2,7 @@
 
 import { FolderKanban, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { Collapse } from "@/components/motion/Collapse";
 import { Reveal } from "@/components/motion/Reveal";
 import {
   Alert,
@@ -46,6 +47,14 @@ export default function ProjectsPage() {
   const deleteProject = useDeleteProject();
 
   const [editing, setEditing] = useState<Project | "new" | null>(null);
+  // The editor has to keep rendering while it animates shut, by which point
+  // `editing` is already null. Remembering the last target keeps the closing
+  // panel showing what it was showing rather than collapsing an empty box.
+  // Held in state, not a ref: this is read during render, and a ref read at
+  // render time is not guaranteed to be the value React renders with.
+  const [lastEditing, setLastEditing] = useState<Project | "new" | null>(null);
+  if (editing && editing !== lastEditing) setLastEditing(editing);
+  const editorTarget = editing ?? lastEditing;
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
@@ -74,26 +83,31 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {editing && (
-        <div className="mb-5">
-          <ProjectEditor
-            project={editing === "new" ? undefined : editing}
-            saving={saveProject.isPending}
-            onCancel={() => setEditing(null)}
-            onSave={(values) => {
-              setError(null);
-              saveProject.mutate(
-                { ...values, id: editing === "new" ? undefined : editing.id },
-                {
-                  onSuccess: () => setEditing(null),
-                  onError: (err) =>
-                    setError(err instanceof ApiError ? err.message : "Could not save the project."),
-                },
-              );
-            }}
-          />
-        </div>
-      )}
+      <Collapse open={!!editing}>
+        {editorTarget && (
+          <div className="mb-5">
+            <ProjectEditor
+              key={editorTarget === "new" ? "new" : editorTarget.id}
+              project={editorTarget === "new" ? undefined : editorTarget}
+              saving={saveProject.isPending}
+              onCancel={() => setEditing(null)}
+              onSave={(values) => {
+                setError(null);
+                saveProject.mutate(
+                  { ...values, id: editorTarget === "new" ? undefined : editorTarget.id },
+                  {
+                    onSuccess: () => setEditing(null),
+                    onError: (err) =>
+                      setError(
+                        err instanceof ApiError ? err.message : "Could not save the project.",
+                      ),
+                  },
+                );
+              }}
+            />
+          </div>
+        )}
+      </Collapse>
 
       <Card>
         {isPending ? (

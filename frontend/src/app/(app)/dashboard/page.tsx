@@ -243,6 +243,7 @@ export default function DashboardPage() {
                 value={section}
                 onChange={(event) => setSection(event.target.value as ReportSection)}
                 className="w-40"
+                aria-label="Section to show across the team"
               >
                 <option value="BLOCKERS">Blockers</option>
                 <option value="ACHIEVEMENTS">Achievements</option>

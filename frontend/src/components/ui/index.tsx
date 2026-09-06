@@ -2,7 +2,7 @@
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { useRef } from "react";
 import type {
   ButtonHTMLAttributes,
@@ -168,6 +168,17 @@ export function Textarea({
   );
 }
 
+/**
+ * A native select with the browser arrow replaced by our own.
+ *
+ * appearance-none removes the platform chevron, and until now nothing put one
+ * back — the dropdowns had no affordance at all. The replacement rotates on
+ * focus-within, which is the closest honest signal available: a native select
+ * gives no "is the list open" event, but opening one always focuses it first.
+ *
+ * pointer-events-none on the icon matters, or it would swallow the click meant
+ * for the select underneath it.
+ */
 export function Select({
   className,
   invalid,
@@ -175,18 +186,24 @@ export function Select({
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean }) {
   return (
-    <select
-      {...props}
-      aria-invalid={invalid || undefined}
-      className={cn(
-        FIELD_BASE,
-        "appearance-none pr-8",
-        invalid && "border-status-missing",
-        className,
-      )}
-    >
-      {children}
-    </select>
+    <div className="group relative w-full">
+      <select
+        {...props}
+        aria-invalid={invalid || undefined}
+        className={cn(
+          FIELD_BASE,
+          "appearance-none pr-9",
+          invalid && "border-status-missing",
+          className,
+        )}
+      >
+        {children}
+      </select>
+      <ChevronDown
+        aria-hidden
+        className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-secondary transition-transform duration-200 group-focus-within:rotate-180"
+      />
+    </div>
   );
 }
 

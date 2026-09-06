@@ -2,6 +2,7 @@
 
 import { Plus, UserRoundX, Users } from "lucide-react";
 import { useState } from "react";
+import { Collapse } from "@/components/motion/Collapse";
 import { Reveal } from "@/components/motion/Reveal";
 import {
   Alert,
@@ -76,7 +77,7 @@ export default function UsersPage() {
         </div>
       )}
 
-      {creating && (
+      <Collapse open={creating}>
         <div className="mb-5">
           <NewUserForm
             saving={createUser.isPending}
@@ -90,7 +91,7 @@ export default function UsersPage() {
             }}
           />
         </div>
-      )}
+      </Collapse>
 
       <div className="mb-4 flex flex-wrap gap-3">
         <Field label="Search" className="w-56">
@@ -152,9 +153,9 @@ export default function UsersPage() {
                       </Td>
                       <Td className="text-secondary">{user.email}</Td>
                       <Td className="text-secondary">{user.jobTitle ?? "—"}</Td>
-                      <Td>
+                      <Td className="w-36">
                         <Select
-                          className="h-8 w-32 py-1 text-xs"
+                          className="h-8 py-1 text-xs"
                           value={user.role}
                           /* Changing your own role is refused by the API, so do
                              not offer it and invite a 409. */

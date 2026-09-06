@@ -1,9 +1,10 @@
 "use client";
 
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import {
   BarChart3,
   ChevronsLeft,
-  ChevronsRight,
   ClipboardList,
   FolderKanban,
   LayoutDashboard,
@@ -14,8 +15,6 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -43,18 +42,31 @@ const NAV: NavItem[] = [
   { href: "/settings", label: "Settings", icon: <Settings className="size-4" /> },
 ];
 
+/** Rail geometry in px, kept here so the tweens and the layout cannot drift apart. */
+const RAIL = {
+  expanded: 256,
+  collapsed: 64,
+  /** Horizontal padding that centres a 16px nav icon in the collapsed rail. */
+  navPadCollapsed: 24,
+  navPadExpanded: 12,
+  /** Same, for the 32px avatar and icon frame in the footer. */
+  footerPadCollapsed: 16,
+  footerPadExpanded: 12,
+} as const;
+
 /**
  * The signed-in chrome: sidebar, header, and the client-side session guard.
  *
- * The sidebar has two independent states. On small screens it is a drawer that
- * slides over the page. From large screens up it is always in the layout, and
- * can be collapsed to an icon-only rail — the collapse toggle is hidden on
- * mobile, where a 4rem rail would be worse than the drawer it replaced.
+ * Collapsing is animated entirely by GSAP, and nothing about the collapsed look
+ * is expressed as a Tailwind class. That is deliberate: a class toggled by
+ * React applies on the very next paint, so any property described both ways
+ * snaps to its final value and *then* gets animated from there. Two engines
+ * driving one property is what made the earlier version stutter.
  *
  * The guard is a convenience, not a security boundary — the API rejects
  * anything the caller may not do regardless of what the UI renders.
  */
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   const { data: user, isPending } = useMe();
   const router = useRouter();
   const pathname = usePathname();
@@ -66,59 +78,87 @@ export function AppShell({ children }: { children: ReactNode }) {
   const main = useRef<HTMLElement>(null);
 
   /**
-   * Collapsing the rail.
+   * Collapsing and expanding the rail.
    *
-   * Width and labels are one timeline rather than two tweens, so the labels
-   * are always gone before the rail is narrow enough to clip them — running
-   * them independently is what makes collapsible sidebars look like the text
-   * is being guillotined.
+   * Order is the whole trick. Collapsing fades the labels, takes them out of
+   * layout, and only then narrows the rail, so the rail never closes onto
+   * visible text. Expanding reverses it: the space is made first and the labels
+   * arrive into room that already exists.
    */
   useGSAP(
     () => {
       const aside = sidebar.current;
-      const labels = nav.current?.querySelectorAll("[data-nav-label]");
-      if (!aside || !labels) return;
+      if (!aside) return;
 
-      // Scoped to desktop by media query rather than an innerWidth check.
-      // GSAP reverts a context's inline styles when its query stops matching,
-      // so collapsing on desktop and then resizing to mobile cannot leave the
-      // drawer pinned at 4rem.
+      const labels = aside.querySelectorAll("[data-rail-label]");
+      const navRows = aside.querySelectorAll("[data-rail-row]");
+      const footerRows = aside.querySelectorAll("[data-rail-row-wide]");
+
+      // Scoped by media query rather than an innerWidth check: GSAP reverts a
+      // context's inline styles when its query stops matching, so collapsing on
+      // desktop and resizing to mobile cannot leave the drawer pinned narrow.
       const media = gsap.matchMedia(aside);
 
-      media.add(
-        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
-        () => {
-          const timeline = gsap.timeline();
-          if (collapsed) {
-            // Labels leave first, so the rail never narrows onto visible text.
-            timeline
-              .to(labels, { opacity: 0, x: -6, duration: DURATION.instant, ease: EASE.in }, 0)
-              .to(aside, { width: 64, duration: DURATION.base, ease: EASE.inOut }, 0.06);
-          } else {
-            // Expanding reverses the order: room is made before text returns.
-            timeline
-              .to(aside, { width: 256, duration: DURATION.base, ease: EASE.inOut }, 0)
-              .to(
-                labels,
-                { ...RESTING, duration: DURATION.quick, ease: EASE.out, stagger: 0.018 },
-                0.12,
-              );
-          }
-        },
-      );
+      media.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
+        const timeline = gsap.timeline({ defaults: { ease: EASE.inOut, duration: DURATION.base } });
+
+        if (collapsed) {
+          timeline
+            .to(labels, { opacity: 0, duration: DURATION.instant, ease: EASE.in })
+            // display:none rather than width:0 — it removes the labels from
+            // layout entirely, so the flex gap collapses with them and there is
+            // no leftover sliver to account for.
+            .set(labels, { display: "none" })
+            .to(aside, { width: RAIL.collapsed }, "<")
+            .to(
+              navRows,
+              { paddingLeft: RAIL.navPadCollapsed, paddingRight: RAIL.navPadCollapsed },
+              "<",
+            )
+            .to(
+              footerRows,
+              { paddingLeft: RAIL.footerPadCollapsed, paddingRight: RAIL.footerPadCollapsed },
+              "<",
+            );
+        } else {
+          timeline
+            .set(labels, { display: "" })
+            .to(aside, { width: RAIL.expanded }, 0)
+            .to(navRows, { paddingLeft: RAIL.navPadExpanded, paddingRight: RAIL.navPadExpanded }, 0)
+            .to(
+              footerRows,
+              { paddingLeft: RAIL.footerPadExpanded, paddingRight: RAIL.footerPadExpanded },
+              0,
+            )
+            // Labels fade in over the second half, once there is room for them.
+            .to(
+              labels,
+              { opacity: 1, duration: DURATION.quick, ease: EASE.out, stagger: 0.015 },
+              0.14,
+            );
+        }
+      });
 
       media.add("(min-width: 1024px) and (prefers-reduced-motion: reduce)", () => {
-        gsap.set(aside, { width: collapsed ? 64 : 256 });
-        gsap.set(labels, { opacity: collapsed ? 0 : 1, x: 0 });
+        gsap.set(aside, { width: collapsed ? RAIL.collapsed : RAIL.expanded });
+        gsap.set(labels, { opacity: collapsed ? 0 : 1, display: collapsed ? "none" : "" });
+        gsap.set(navRows, {
+          paddingLeft: collapsed ? RAIL.navPadCollapsed : RAIL.navPadExpanded,
+          paddingRight: collapsed ? RAIL.navPadCollapsed : RAIL.navPadExpanded,
+        });
+        gsap.set(footerRows, {
+          paddingLeft: collapsed ? RAIL.footerPadCollapsed : RAIL.footerPadExpanded,
+          paddingRight: collapsed ? RAIL.footerPadCollapsed : RAIL.footerPadExpanded,
+        });
       });
     },
-    { dependencies: [collapsed], revertOnUpdate: true },
+    { dependencies: [collapsed] },
   );
 
   /** Nav items arrive as one gesture the first time the shell mounts. */
   useGSAP(
     () => {
-      const links = nav.current?.querySelectorAll("[data-nav-item]");
+      const links = nav.current?.querySelectorAll("[data-rail-row]");
       if (!links?.length) return;
 
       withMotion(
@@ -126,23 +166,20 @@ export function AppShell({ children }: { children: ReactNode }) {
         () => {
           gsap.set(links, { opacity: 0, x: -8 });
           gsap.to(links, {
-            ...RESTING,
+            opacity: 1,
+            x: 0,
             duration: DURATION.quick,
             ease: EASE.out,
             stagger: STAGGER.each,
           });
         },
-        () => gsap.set(links, RESTING),
+        () => gsap.set(links, { opacity: 1, x: 0 }),
       );
     },
     { scope: nav },
   );
 
-  /**
-   * Page transition. Keyed on the route, so navigating re-runs it and the new
-   * screen announces itself instead of appearing mid-scroll with no signal
-   * that anything changed.
-   */
+  /** Page transition, keyed on the route so each screen announces itself. */
   useGSAP(
     () => {
       const node = main.current;
@@ -194,39 +231,29 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside
         ref={sidebar}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-border bg-surface",
-          // Pinned to the viewport rather than stretched to the page: the
-          // account footer must stay reachable however long the page is.
-          // bottom-auto because inset-y-0 (needed for the mobile drawer)
-          // would otherwise give the sticky element two opposing thresholds.
+          "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col overflow-x-hidden",
+          "border-r border-border bg-surface",
+          // Pinned to the viewport rather than stretched to the page, so the
+          // account footer stays reachable however long the page is.
           "lg:sticky lg:top-0 lg:bottom-auto lg:h-dvh lg:self-start",
-          // CSS owns the drawer slide, GSAP owns the desktop width. Transitioning
-          // "all" here would put both in charge of the same property.
+          // Only the drawer slide is a CSS transition. Width, padding and label
+          // opacity all belong to GSAP.
           "transition-transform duration-200 lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
-          // GSAP owns the desktop width; this keeps the collapsed rail correct
-          // before hydration and on the reduced-motion path.
-          collapsed && "lg:w-16",
         )}
       >
-        <div
-          className={cn(
-            "flex h-14 shrink-0 items-center gap-2 px-3",
-            collapsed ? "lg:justify-center lg:px-0" : "justify-between px-5",
-          )}
-        >
+        <div className="flex h-14 shrink-0 items-center gap-2 overflow-hidden px-3">
           <Link
             href="/"
             onClick={() => setMobileOpen(false)}
-            className={cn(
-              "truncate text-sm font-semibold text-primary",
-              collapsed && "lg:hidden",
-            )}
+            data-rail-label
+            className="min-w-0 flex-1 truncate whitespace-nowrap text-sm font-semibold text-primary"
           >
             Weekly Reports
           </Link>
 
-          {/* Desktop collapse toggle. */}
+          {/* One icon that rotates rather than two that swap: the rotation is
+              the state change made visible, and it cannot flicker mid-tween. */}
           <button
             type="button"
             onClick={() => setCollapsed((open) => !open)}
@@ -235,14 +262,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-expanded={!collapsed}
             className="hidden size-8 shrink-0 items-center justify-center rounded-lg text-secondary transition hover:bg-surface-muted hover:text-primary lg:inline-flex"
           >
-            {collapsed ? <ChevronsRight className="size-4" /> : <ChevronsLeft className="size-4" />}
+            <ChevronsLeft
+              className={cn("size-4 transition-transform duration-300", collapsed && "rotate-180")}
+            />
           </button>
 
-          {/* Mobile close button. */}
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="text-secondary lg:hidden"
+            className="shrink-0 text-secondary lg:hidden"
             aria-label="Close menu"
           >
             <X className="size-5" />
@@ -251,10 +279,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <nav
           ref={nav}
-          className={cn(
-            "min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain py-2",
-            collapsed ? "lg:px-2" : "px-3",
-          )}
+          className="min-h-0 flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-2"
         >
           {items.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -264,21 +289,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 // Collapsed, the icon is the only affordance, so the label has
-                // to survive as a tooltip and as the accessible name.
+                // to survive as tooltip and accessible name.
                 title={collapsed ? item.label : undefined}
                 aria-label={collapsed ? item.label : undefined}
                 onClick={() => setMobileOpen(false)}
-                data-nav-item
+                data-rail-row
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition",
-                  collapsed && "lg:justify-center lg:px-0",
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
                   active
                     ? "bg-brand font-medium text-brand-foreground hover:bg-brand-hover"
                     : "text-secondary hover:bg-surface-muted hover:text-primary",
                 )}
               >
-                <span className="shrink-0">{item.icon}</span>
-                <span data-nav-label className={cn("truncate", collapsed && "lg:hidden")}>
+                <span className="flex size-4 shrink-0 items-center justify-center">{item.icon}</span>
+                <span data-rail-label className="truncate whitespace-nowrap">
                   {item.label}
                 </span>
               </Link>
@@ -326,28 +350,14 @@ function initialsOf(name: string): string {
   return (first + last).toUpperCase();
 }
 
-function Avatar({ name, className }: { name: string; className?: string }) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-foreground",
-        className,
-      )}
-    >
-      {initialsOf(name)}
-    </span>
-  );
-}
-
 /**
  * Account block at the bottom of the sidebar.
  *
- * Expanded it names the account and labels the sign-out action. Collapsed it
- * falls back to two icon targets — the avatar links to account settings, and
- * the second signs out — because at 4rem there is no room for either label.
+ * One DOM structure for both states rather than two that swap. Collapsing hides
+ * the text and leaves the avatar and the sign-out icon, so the change is a fade
+ * rather than a replacement — nothing unmounts, so nothing can pop.
  */
-function SidebarFooter({ user, collapsed }: { user: User; collapsed: boolean }) {
+function SidebarFooter({ user, collapsed }: Readonly<{ user: User; collapsed: boolean }>) {
   const logout = useLogout();
   const router = useRouter();
 
@@ -357,53 +367,44 @@ function SidebarFooter({ user, collapsed }: { user: User; collapsed: boolean }) 
     });
 
   return (
-    <div className={cn("shrink-0 border-t border-border p-3", collapsed && "lg:px-2")}>
-      {/* Collapsed: icon-only profile and sign out, stacked. */}
-      <div className={cn("hidden flex-col items-center gap-1", collapsed && "lg:flex")}>
-        <Link
-          href="/settings"
-          title={`${user.name} — account settings`}
-          aria-label={`${user.name} — account settings`}
-          className="flex size-9 items-center justify-center rounded-lg transition hover:bg-surface-muted"
+    <div className="shrink-0 overflow-hidden border-t border-border py-3">
+      <Link
+        href="/settings"
+        title={collapsed ? `${user.name} — account settings` : undefined}
+        aria-label={collapsed ? `${user.name} — account settings` : undefined}
+        data-rail-row-wide
+        className="mb-1 flex items-center gap-2.5 rounded-lg px-3 py-1.5 transition-colors hover:bg-surface-muted"
+      >
+        <span
+          aria-hidden
+          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-semibold text-brand-foreground"
         >
-          <Avatar name={user.name} />
-        </Link>
-        <button
-          type="button"
-          onClick={signOut}
-          disabled={logout.isPending}
-          title="Sign out"
-          aria-label="Sign out"
-          className="flex size-9 items-center justify-center rounded-lg text-secondary transition hover:bg-surface-muted hover:text-primary disabled:opacity-50"
-        >
-          <LogOut className="size-4" />
-        </button>
-      </div>
-
-      {/* Expanded: the same two actions, named. */}
-      <div className={cn(collapsed && "lg:hidden")}>
-        <Link
-          href="/settings"
-          className="mb-1 flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-surface-muted"
-        >
-          <Avatar name={user.name} />
-          <span className="min-w-0">
-            <span className="block truncate text-xs font-medium text-primary">{user.email}</span>
-            <span className="block text-xs text-secondary">
-              {user.role === "MANAGER" ? "Manager" : "Team member"}
-            </span>
+          {initialsOf(user.name)}
+        </span>
+        <span data-rail-label className="min-w-0 whitespace-nowrap">
+          <span className="block truncate text-xs font-medium text-primary">{user.email}</span>
+          <span className="block text-xs text-secondary">
+            {user.role === "MANAGER" ? "Manager" : "Team member"}
           </span>
-        </Link>
-        <button
-          type="button"
-          onClick={signOut}
-          disabled={logout.isPending}
-          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-secondary transition hover:bg-surface-muted hover:text-primary disabled:opacity-50"
-        >
+        </span>
+      </Link>
+
+      <button
+        type="button"
+        onClick={signOut}
+        disabled={logout.isPending}
+        title={collapsed ? "Sign out" : undefined}
+        aria-label={collapsed ? "Sign out" : undefined}
+        data-rail-row-wide
+        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-secondary transition-colors hover:bg-surface-muted hover:text-primary disabled:opacity-50"
+      >
+        <span className="flex size-8 shrink-0 items-center justify-center">
           <LogOut className="size-4" />
+        </span>
+        <span data-rail-label className="whitespace-nowrap">
           {logout.isPending ? "Signing out…" : "Sign out"}
-        </button>
-      </div>
+        </span>
+      </button>
     </div>
   );
 }

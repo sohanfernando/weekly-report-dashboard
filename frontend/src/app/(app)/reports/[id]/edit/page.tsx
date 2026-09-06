@@ -3,6 +3,7 @@
 import { ArrowLeft, MessageSquareWarning } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { Reveal } from "@/components/motion/Reveal";
 import { ReportForm } from "@/components/report/ReportForm";
 import { Alert, Button, Card, EmptyState, Loading, PageHeader } from "@/components/ui";
 import { dateTime, weekRangeLabel } from "@/lib/format";
@@ -95,7 +96,9 @@ export default function EditReportPage() {
         </div>
       )}
 
-      <ReportForm report={report} />
+      <Reveal stagger="form > *">
+        <ReportForm report={report} />
+      </Reveal>
     </>
   );
 }

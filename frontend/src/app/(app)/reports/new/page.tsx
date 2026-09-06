@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import { ReportForm } from "@/components/report/ReportForm";
 import { Alert, Loading, PageHeader } from "@/components/ui";
 import { mondayOf } from "@/lib/format";
@@ -35,7 +36,11 @@ function NewReportPage() {
         </div>
       )}
 
-      <ReportForm defaultWeek={week} />
+      {/* Staggering the cards turns a wall of eight panels into something
+          that assembles, which makes a long form feel shorter than it is. */}
+      <Reveal stagger="form > *">
+        <ReportForm defaultWeek={week} />
+      </Reveal>
     </>
   );
 }
