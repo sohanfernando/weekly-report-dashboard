@@ -16,9 +16,9 @@ import org.springframework.data.domain.Pageable;
  * system unadministrable:
  *
  * <ul>
- *   <li>An admin cannot demote or deactivate <em>themselves</em>. Otherwise a
+ *   <li>A manager cannot demote or deactivate <em>themselves</em>. Otherwise a
  *       single mis-click ends with nobody able to administer anything.
- *   <li>The last remaining active admin cannot be demoted, deactivated or
+ *   <li>The last remaining active manager cannot be demoted, deactivated or
  *       removed, whoever is asking.
  * </ul>
  *
@@ -31,12 +31,12 @@ public interface UserService {
 
     UserResponse get(Long userId);
 
-    /** Creates a user directly, with a role, on behalf of an admin. */
+    /** Creates a user directly, with a role, on behalf of a manager. */
     UserResponse create(CreateUserRequest request);
 
-    UserResponse updateRole(Long userId, UpdateUserRoleRequest request, Long actingAdminId);
+    UserResponse updateRole(Long userId, UpdateUserRoleRequest request, Long actingManagerId);
 
-    UserResponse updateStatus(Long userId, UpdateUserStatusRequest request, Long actingAdminId);
+    UserResponse updateStatus(Long userId, UpdateUserStatusRequest request, Long actingManagerId);
 
     /**
      * Removes a team member.
@@ -46,5 +46,5 @@ public interface UserService {
      * useless on a manager's dashboard. A deactivated user cannot log in and
      * their history stays intact.
      */
-    void remove(Long userId, Long actingAdminId);
+    void remove(Long userId, Long actingManagerId);
 }

@@ -63,17 +63,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateRole(Long userId, UpdateUserRoleRequest request, Long actingAdminId) {
+    public UserResponse updateRole(Long userId, UpdateUserRoleRequest request, Long actingManagerId) {
         User user = findUser(userId);
 
         if (user.getRole() == request.role()) {
             return UserResponse.from(user);
         }
-        if (userId.equals(actingAdminId)) {
+        if (userId.equals(actingManagerId)) {
             throw new ConflictException("You cannot change your own role");
         }
-        if (user.getRole() == Role.ADMIN) {
-            requireAnotherAdminRemains(user);
+        if (user.getRole() == Role.MANAGER) {
+            requireAnotherManagerRemains(user);
         }
 
         user.setRole(request.role());
@@ -82,7 +82,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse updateStatus(Long userId, UpdateUserStatusRequest request, Long actingAdminId) {
+    public UserResponse updateStatus(Long userId, UpdateUserStatusRequest request, Long actingManagerId) {
         User user = findUser(userId);
         boolean active = Boolean.TRUE.equals(request.active());
 
@@ -90,9 +90,9 @@ public class UserServiceImpl implements UserService {
             return UserResponse.from(user);
         }
         if (!active) {
-            requireNotSelf(userId, actingAdminId, "deactivate your own account");
-            if (user.getRole() == Role.ADMIN) {
-                requireAnotherAdminRemains(user);
+            requireNotSelf(userId, actingManagerId, "deactivate your own account");
+            if (user.getRole() == Role.MANAGER) {
+                requireAnotherManagerRemains(user);
             }
         }
 
@@ -102,12 +102,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void remove(Long userId, Long actingAdminId) {
+    public void remove(Long userId, Long actingManagerId) {
         User user = findUser(userId);
-        requireNotSelf(userId, actingAdminId, "remove your own account");
+        requireNotSelf(userId, actingManagerId, "remove your own account");
 
-        if (user.getRole() == Role.ADMIN) {
-            requireAnotherAdminRemains(user);
+        if (user.getRole() == Role.MANAGER) {
+            requireAnotherManagerRemains(user);
         }
         if (!user.isActive()) {
             return;
@@ -121,23 +121,23 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(userId).orElseThrow(() -> NotFoundException.of("User", userId));
     }
 
-    private void requireNotSelf(Long userId, Long actingAdminId, String action) {
-        if (userId.equals(actingAdminId)) {
+    private void requireNotSelf(Long userId, Long actingManagerId, String action) {
+        if (userId.equals(actingManagerId)) {
             throw new ConflictException("You cannot " + action);
         }
     }
 
     /**
-     * Refuses the change if it would leave the system with no active admin.
+     * Refuses the change if it would leave the system with no active manager.
      *
      * <p>The subject is only counted when they are currently active, so
-     * deactivating an already-inactive admin cannot trip the check.
+     * deactivating an already-inactive manager cannot trip the check.
      */
-    private void requireAnotherAdminRemains(User subject) {
-        long activeAdmins = userRepository.countByRoleAndActiveTrue(Role.ADMIN);
-        long remaining = subject.isActive() ? activeAdmins - 1 : activeAdmins;
+    private void requireAnotherManagerRemains(User subject) {
+        long activeManagers = userRepository.countByRoleAndActiveTrue(Role.MANAGER);
+        long remaining = subject.isActive() ? activeManagers - 1 : activeManagers;
         if (remaining < 1) {
-            throw new ConflictException("The last active administrator cannot be demoted or removed");
+            throw new ConflictException("The last active manager cannot be demoted or removed");
         }
     }
 }

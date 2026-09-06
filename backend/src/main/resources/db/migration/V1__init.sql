@@ -27,7 +27,7 @@ CREATE TABLE users (
     updated_at    DATETIME(6)  NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT uk_users_email UNIQUE (email),
-    CONSTRAINT ck_users_role CHECK (role IN ('MEMBER', 'MANAGER', 'ADMIN'))
+    CONSTRAINT ck_users_role CHECK (role IN ('MEMBER', 'MANAGER'))
 ) ENGINE = InnoDB;
 
 -- ------------------------------------------------------------- projects

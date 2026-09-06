@@ -53,13 +53,13 @@ app:
   seed:
     enabled: ${SEED_ENABLED:true}
   bootstrap:
-    # Created once, at startup, and only when the database contains no admin.
+    # Created once, at startup, and only when the database contains no manager.
     # Change the password in any deployed environment.
-    admin:
-      enabled: ${BOOTSTRAP_ADMIN_ENABLED:true}
-      name: ${BOOTSTRAP_ADMIN_NAME:System Admin}
-      email: ${BOOTSTRAP_ADMIN_EMAIL:admin@sisenco.local}
-      password: ${BOOTSTRAP_ADMIN_PASSWORD:Admin@12345}
+    manager:
+      enabled: ${BOOTSTRAP_MANAGER_ENABLED:true}
+      name: ${BOOTSTRAP_MANAGER_NAME:Team Manager}
+      email: ${BOOTSTRAP_MANAGER_EMAIL:manager@sisenco.local}
+      password: ${BOOTSTRAP_MANAGER_PASSWORD:Manager@12345}
 
 logging:
   level:

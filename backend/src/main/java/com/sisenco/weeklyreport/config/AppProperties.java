@@ -32,13 +32,13 @@ public record AppProperties(Jwt jwt, Cors cors, Seed seed, Bootstrap bootstrap) 
 
     public record Seed(boolean enabled) {}
 
-    public record Bootstrap(Admin admin) {
+    public record Bootstrap(Manager manager) {
 
         /**
-         * The first administrator, created at startup only when no admin exists
-         * yet. Without it there would be no way to grant anyone the ADMIN role,
-         * because doing so already requires being an admin.
+         * The first manager, created at startup only when no manager exists yet.
+         * Without it there would be no way to grant anyone the MANAGER role,
+         * because doing so already requires being a manager.
          */
-        public record Admin(boolean enabled, String name, String email, String password) {}
+        public record Manager(boolean enabled, String name, String email, String password) {}
     }
 }

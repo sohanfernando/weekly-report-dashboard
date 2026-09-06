@@ -28,18 +28,18 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * User management, backing the admin page in Section 7 of the brief.
+ * Team member management, backing the user-management page in Section 7.
  *
- * <p>Guarded twice on purpose: the {@code /api/admin/**} pattern is already
- * restricted to ADMIN in {@code SecurityConfig}, and {@link PreAuthorize} on the
- * class repeats it. The duplication is deliberate — if someone later re-arranges
- * the URL matchers, these endpoints do not quietly fall open.
+ * <p>Guarded twice on purpose: {@code /api/users/**} is already restricted to
+ * MANAGER in {@code SecurityConfig}, and {@link PreAuthorize} on the class
+ * repeats it. The duplication is deliberate — if someone later re-arranges the
+ * URL matchers, these endpoints do not quietly fall open.
  */
 @RestController
-@RequestMapping("/api/admin/users")
-@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping("/api/users")
+@PreAuthorize("hasRole('MANAGER')")
 @RequiredArgsConstructor
-public class AdminUserController {
+public class UserController {
 
     private final UserService userService;
 
@@ -57,7 +57,7 @@ public class AdminUserController {
         return userService.get(userId);
     }
 
-    /** Creates a member, manager or admin directly, bypassing self-registration. */
+    /** Creates a member or manager directly, bypassing self-registration. */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse create(@Valid @RequestBody CreateUserRequest request) {

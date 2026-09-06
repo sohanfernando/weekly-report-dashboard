@@ -41,7 +41,7 @@ public class User extends AuditedEntity {
     @Column(nullable = false)
     private boolean active;
 
-    public boolean isManagerOrAdmin() {
+    public boolean isManager() {
         return role != null && role.canReviewReports();
     }
 }
