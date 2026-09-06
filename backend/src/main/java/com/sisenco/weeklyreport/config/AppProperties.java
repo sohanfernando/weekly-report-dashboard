@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Every value is overridable by environment variable for deployment.
  */
 @ConfigurationProperties(prefix = "app")
-public record AppProperties(Jwt jwt, Cors cors, Seed seed) {
+public record AppProperties(Jwt jwt, Cors cors, Seed seed, Bootstrap bootstrap) {
 
     public record Jwt(
             /** HMAC-SHA256 signing key. Must be at least 32 bytes. */
@@ -31,4 +31,14 @@ public record AppProperties(Jwt jwt, Cors cors, Seed seed) {
     public record Cors(List<String> allowedOrigins) {}
 
     public record Seed(boolean enabled) {}
+
+    public record Bootstrap(Admin admin) {
+
+        /**
+         * The first administrator, created at startup only when no admin exists
+         * yet. Without it there would be no way to grant anyone the ADMIN role,
+         * because doing so already requires being an admin.
+         */
+        public record Admin(boolean enabled, String name, String email, String password) {}
+    }
 }
