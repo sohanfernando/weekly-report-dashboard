@@ -86,12 +86,14 @@ CREATE TABLE report_versions (
     -- Exactly one version per report is editable: the working draft.
     -- Submitting freezes it; requesting changes clones it into version_no + 1.
     editable       BOOLEAN     NOT NULL DEFAULT TRUE,
-    submitted_at   DATETIME(6) NULL,
-    next_week_plan TEXT        NULL,
-    notes          TEXT        NULL,
-    links          TEXT        NULL,
-    created_at     DATETIME(6) NOT NULL,
-    updated_at     DATETIME(6) NOT NULL,
+    submitted_at   DATETIME(6)   NULL,
+    -- VARCHAR rather than TEXT: maps 1:1 to a plain String field, so
+    -- ddl-auto=validate passes without per-column JDBC type overrides.
+    next_week_plan VARCHAR(2000) NULL,
+    notes          VARCHAR(2000) NULL,
+    links          VARCHAR(2000) NULL,
+    created_at     DATETIME(6)   NOT NULL,
+    updated_at     DATETIME(6)   NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT uk_versions_report_no UNIQUE (report_id, version_no),
     CONSTRAINT fk_versions_report FOREIGN KEY (report_id) REFERENCES reports (id) ON DELETE CASCADE

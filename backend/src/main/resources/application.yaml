@@ -11,7 +11,7 @@ spring:
       lifecycle-management: start-only
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/weeklyreport?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/weeklyreport?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${SPRING_DATASOURCE_USERNAME:weeklyreport}
     password: ${SPRING_DATASOURCE_PASSWORD:weeklyreport}
 
