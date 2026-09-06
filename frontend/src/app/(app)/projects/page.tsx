@@ -2,6 +2,7 @@
 
 import { FolderKanban, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Alert,
   Badge,
@@ -109,7 +110,7 @@ export default function ProjectsPage() {
                 {isManager && <Th />}
               </tr>
             </thead>
-            <tbody>
+            <Reveal as="tbody" stagger="tr" deps={[projects.length]}>
               {projects.map((project) => (
                 <tr key={project.id} className="transition hover:bg-surface-muted/50">
                   <Td>
@@ -191,7 +192,7 @@ export default function ProjectsPage() {
                   )}
                 </tr>
               ))}
-            </tbody>
+            </Reveal>
           </Table>
         ) : (
           <EmptyState

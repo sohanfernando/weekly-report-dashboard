@@ -1,6 +1,9 @@
 "use client";
 
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import { Loader2 } from "lucide-react";
+import { useRef } from "react";
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -10,6 +13,7 @@ import type {
 } from "react";
 import { cn } from "@/lib/cn";
 import { STATUS_LABEL, STATUS_STYLE } from "@/lib/format";
+import { DURATION, EASE, RESTING, withMotion } from "@/lib/motion";
 import type { SubmissionState } from "@/lib/types";
 
 /**
@@ -343,6 +347,24 @@ export function Alert({
   tone?: "error" | "info" | "success" | "warning";
   children: ReactNode;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // An alert usually appears in response to something the user just did, often
+  // well down a long form. Arriving with a little movement is what makes it
+  // get noticed at all.
+  useGSAP(() => {
+    const node = ref.current;
+    if (!node) return;
+    withMotion(
+      node,
+      () => {
+        gsap.set(node, { opacity: 0, y: -6, scale: 0.99 });
+        gsap.to(node, { ...RESTING, duration: DURATION.quick, ease: EASE.out });
+      },
+      () => gsap.set(node, RESTING),
+    );
+  });
+
   // Tones borrow the status palette so a warning here matches a "needs
   // correction" badge elsewhere, rather than introducing a second amber.
   const tones = {
@@ -352,13 +374,23 @@ export function Alert({
     warning: "bg-status-correction/10 text-status-correction ring-status-correction/25",
   };
   return (
-    <div className={cn("rounded-lg px-4 py-3 text-sm ring-1 ring-inset", tones[tone])} role="alert">
+    <div
+      ref={ref}
+      className={cn("rounded-lg px-4 py-3 text-sm ring-1 ring-inset", tones[tone])}
+      role="alert"
+    >
       {children}
     </div>
   );
 }
 
-/** A labelled number for the metric row at the top of the dashboard. */
+/**
+ * A labelled number for the metric row at the top of the dashboard.
+ *
+ * `value` takes a node rather than a number so a caller can pass an
+ * AnimatedNumber, or a composite like "3 / 5" built from one plus text,
+ * without this component needing to know how to format either.
+ */
 export function StatTile({
   label,
   value,

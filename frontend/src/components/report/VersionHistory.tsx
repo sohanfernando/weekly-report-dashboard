@@ -2,6 +2,7 @@
 
 import { ChevronDown, History } from "lucide-react";
 import { useState } from "react";
+import { Collapse } from "@/components/motion/Collapse";
 import { Card, CardBody, CardHeader } from "@/components/ui";
 import { ReportView } from "@/components/report/ReportView";
 import { cn } from "@/lib/cn";
@@ -78,11 +79,14 @@ export function VersionHistory({
                 />
               </button>
 
-              {isOpen && (
+              {/* Height rather than a fade: the content below has to move out
+                  of the way, and a panel that appears without displacing
+                  anything reads as an overlay instead of an expansion. */}
+              <Collapse open={isOpen}>
                 <div className="border-t border-border bg-background/40 p-4">
                   <ReportView version={version} />
                 </div>
-              )}
+              </Collapse>
             </div>
           );
         })}

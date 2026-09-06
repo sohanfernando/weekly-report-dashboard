@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { MemberTrendChart } from "@/components/charts";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Button,
   Card,
@@ -126,7 +127,7 @@ export default function MemberProfilePage() {
                 <Th />
               </tr>
             </thead>
-            <tbody>
+            <Reveal as="tbody" stagger="tr" deps={[reports.data.content.length]}>
               {reports.data.content.map((report) => (
                 <tr key={report.id} className="transition hover:bg-surface-muted/50">
                   <Td className="font-medium text-primary">
@@ -152,7 +153,7 @@ export default function MemberProfilePage() {
                   </Td>
                 </tr>
               ))}
-            </tbody>
+            </Reveal>
           </Table>
         ) : (
           <EmptyState title="No submitted reports yet" />

@@ -3,6 +3,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   StatusByMemberChart,
   TasksTrendChart,
@@ -93,35 +95,54 @@ export default function DashboardPage() {
       {summary.isPending ? (
         <Loading />
       ) : summary.data ? (
-        <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatTile
-            label="Reports submitted"
-            value={`${summary.data.submitted} / ${summary.data.expectedMembers}`}
-            hint={`${summary.data.awaitingReview} awaiting review`}
-          />
-          <StatTile
-            label="Submission compliance"
-            value={percent(summary.data.complianceRate)}
-            hint={
-              summary.data.weekClosed
-                ? `${summary.data.late} late`
-                : `${summary.data.pending} still pending`
-            }
-            tone={summary.data.complianceRate >= 80 ? "success" : "warning"}
-          />
-          <StatTile
-            label="Needs correction"
-            value={summary.data.needsCorrection}
-            hint="Sent back for changes"
-            tone={summary.data.needsCorrection > 0 ? "warning" : "default"}
-          />
-          <StatTile
-            label="Open blockers"
-            value={summary.data.openBlockers}
-            hint="Unresolved across the team"
-            tone={summary.data.openBlockers > 0 ? "danger" : "success"}
-          />
-        </div>
+        <Reveal
+          stagger="[data-stat]"
+          deps={[week, summary.data.submitted, summary.data.complianceRate]}
+          className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+        >
+          {/* Counting these is not decoration: change the selected week and a
+              figure that climbs from 40 to 60 reports that it changed, where
+              one that simply swaps does not. */}
+          <div data-stat>
+            <StatTile
+              label="Reports submitted"
+              value={
+                <>
+                  <AnimatedNumber value={summary.data.submitted} /> / {summary.data.expectedMembers}
+                </>
+              }
+              hint={`${summary.data.awaitingReview} awaiting review`}
+            />
+          </div>
+          <div data-stat>
+            <StatTile
+              label="Submission compliance"
+              value={<AnimatedNumber value={summary.data.complianceRate} format={percent} />}
+              hint={
+                summary.data.weekClosed
+                  ? `${summary.data.late} late`
+                  : `${summary.data.pending} still pending`
+              }
+              tone={summary.data.complianceRate >= 80 ? "success" : "warning"}
+            />
+          </div>
+          <div data-stat>
+            <StatTile
+              label="Needs correction"
+              value={<AnimatedNumber value={summary.data.needsCorrection} />}
+              hint="Sent back for changes"
+              tone={summary.data.needsCorrection > 0 ? "warning" : "default"}
+            />
+          </div>
+          <div data-stat>
+            <StatTile
+              label="Open blockers"
+              value={<AnimatedNumber value={summary.data.openBlockers} />}
+              hint="Unresolved across the team"
+              tone={summary.data.openBlockers > 0 ? "danger" : "success"}
+            />
+          </div>
+        </Reveal>
       ) : null}
 
       {/* ------------------------------------------------ submission status */}
@@ -144,7 +165,7 @@ export default function DashboardPage() {
                 <Th />
               </tr>
             </thead>
-            <tbody>
+            <Reveal as="tbody" stagger="tr" deps={[week, submissions.data.length]}>
               {submissions.data.map((row) => (
                 <tr key={row.userId} className="transition hover:bg-surface-muted/50">
                   <Td className="font-medium text-primary">{row.userName}</Td>
@@ -179,7 +200,7 @@ export default function DashboardPage() {
                   </Td>
                 </tr>
               ))}
-            </tbody>
+            </Reveal>
           </Table>
         ) : (
           <EmptyState title="No active team members" />
@@ -187,16 +208,29 @@ export default function DashboardPage() {
       </Card>
 
       {/* ------------------------------------------------------- the charts */}
-      <div className="mb-6 grid gap-5 xl:grid-cols-2">
-        {trend.isPending ? <Loading /> : <TasksTrendChart data={trend.data ?? []} />}
-        {timeSplit.isPending ? <Loading /> : <TimeSplitChart data={timeSplit.data ?? []} />}
-        {workload.isPending ? <Loading /> : <WorkloadChart data={workload.data ?? []} />}
-        {statusByMember.isPending ? (
-          <Loading />
-        ) : (
-          <StatusByMemberChart data={statusByMember.data ?? []} />
-        )}
-      </div>
+      <Reveal
+        stagger="[data-chart]"
+        deps={[week, trend.isPending, workload.isPending]}
+        delay={0.08}
+        className="mb-6 grid gap-5 xl:grid-cols-2"
+      >
+        <div data-chart>
+          {trend.isPending ? <Loading /> : <TasksTrendChart data={trend.data ?? []} />}
+        </div>
+        <div data-chart>
+          {timeSplit.isPending ? <Loading /> : <TimeSplitChart data={timeSplit.data ?? []} />}
+        </div>
+        <div data-chart>
+          {workload.isPending ? <Loading /> : <WorkloadChart data={workload.data ?? []} />}
+        </div>
+        <div data-chart>
+          {statusByMember.isPending ? (
+            <Loading />
+          ) : (
+            <StatusByMemberChart data={statusByMember.data ?? []} />
+          )}
+        </div>
+      </Reveal>
 
       <div className="grid gap-5 xl:grid-cols-2">
         {/* --------------------------------- one section across the team */}

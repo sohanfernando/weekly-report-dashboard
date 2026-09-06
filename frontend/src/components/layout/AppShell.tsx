@@ -14,11 +14,14 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Loading, Spinner } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { DURATION, EASE, RESTING, RISE, STAGGER, withMotion } from "@/lib/motion";
 import { useLogout, useMe } from "@/lib/queries";
 import type { Role, User } from "@/lib/types";
 
@@ -58,6 +61,105 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
+  const sidebar = useRef<HTMLElement>(null);
+  const nav = useRef<HTMLElement>(null);
+  const main = useRef<HTMLElement>(null);
+
+  /**
+   * Collapsing the rail.
+   *
+   * Width and labels are one timeline rather than two tweens, so the labels
+   * are always gone before the rail is narrow enough to clip them — running
+   * them independently is what makes collapsible sidebars look like the text
+   * is being guillotined.
+   */
+  useGSAP(
+    () => {
+      const aside = sidebar.current;
+      const labels = nav.current?.querySelectorAll("[data-nav-label]");
+      if (!aside || !labels) return;
+
+      // Scoped to desktop by media query rather than an innerWidth check.
+      // GSAP reverts a context's inline styles when its query stops matching,
+      // so collapsing on desktop and then resizing to mobile cannot leave the
+      // drawer pinned at 4rem.
+      const media = gsap.matchMedia(aside);
+
+      media.add(
+        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          const timeline = gsap.timeline();
+          if (collapsed) {
+            // Labels leave first, so the rail never narrows onto visible text.
+            timeline
+              .to(labels, { opacity: 0, x: -6, duration: DURATION.instant, ease: EASE.in }, 0)
+              .to(aside, { width: 64, duration: DURATION.base, ease: EASE.inOut }, 0.06);
+          } else {
+            // Expanding reverses the order: room is made before text returns.
+            timeline
+              .to(aside, { width: 256, duration: DURATION.base, ease: EASE.inOut }, 0)
+              .to(
+                labels,
+                { ...RESTING, duration: DURATION.quick, ease: EASE.out, stagger: 0.018 },
+                0.12,
+              );
+          }
+        },
+      );
+
+      media.add("(min-width: 1024px) and (prefers-reduced-motion: reduce)", () => {
+        gsap.set(aside, { width: collapsed ? 64 : 256 });
+        gsap.set(labels, { opacity: collapsed ? 0 : 1, x: 0 });
+      });
+    },
+    { dependencies: [collapsed], revertOnUpdate: true },
+  );
+
+  /** Nav items arrive as one gesture the first time the shell mounts. */
+  useGSAP(
+    () => {
+      const links = nav.current?.querySelectorAll("[data-nav-item]");
+      if (!links?.length) return;
+
+      withMotion(
+        nav.current,
+        () => {
+          gsap.set(links, { opacity: 0, x: -8 });
+          gsap.to(links, {
+            ...RESTING,
+            duration: DURATION.quick,
+            ease: EASE.out,
+            stagger: STAGGER.each,
+          });
+        },
+        () => gsap.set(links, RESTING),
+      );
+    },
+    { scope: nav },
+  );
+
+  /**
+   * Page transition. Keyed on the route, so navigating re-runs it and the new
+   * screen announces itself instead of appearing mid-scroll with no signal
+   * that anything changed.
+   */
+  useGSAP(
+    () => {
+      const node = main.current;
+      if (!node) return;
+
+      withMotion(
+        node,
+        () => {
+          gsap.set(node, { opacity: 0, y: RISE });
+          gsap.to(node, { ...RESTING, duration: DURATION.quick, ease: EASE.out });
+        },
+        () => gsap.set(node, RESTING),
+      );
+    },
+    { dependencies: [pathname], revertOnUpdate: true },
+  );
+
   useEffect(() => {
     if (!isPending && !user) {
       router.replace("/login");
@@ -90,12 +192,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       <aside
+        ref={sidebar}
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-border bg-surface",
-          "transition-all duration-200 lg:static lg:translate-x-0",
+          // CSS owns the drawer slide, GSAP owns the desktop width. Transitioning
+          // "all" here would put both in charge of the same property.
+          "transition-transform duration-200 lg:static lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
-          // The rail width only applies from lg up: the mobile drawer stays
-          // full width whatever the desktop collapse state is.
+          // GSAP owns the desktop width; this keeps the collapsed rail correct
+          // before hydration and on the reduced-motion path.
           collapsed && "lg:w-16",
         )}
       >
@@ -139,7 +244,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav className={cn("flex-1 space-y-0.5 py-2", collapsed ? "lg:px-2" : "px-3")}>
+        <nav ref={nav} className={cn("flex-1 space-y-0.5 py-2", collapsed ? "lg:px-2" : "px-3")}>
           {items.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
@@ -152,6 +257,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 title={collapsed ? item.label : undefined}
                 aria-label={collapsed ? item.label : undefined}
                 onClick={() => setMobileOpen(false)}
+                data-nav-item
                 className={cn(
                   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition",
                   collapsed && "lg:justify-center lg:px-0",
@@ -161,7 +267,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               >
                 <span className="shrink-0">{item.icon}</span>
-                <span className={cn("truncate", collapsed && "lg:hidden")}>{item.label}</span>
+                <span data-nav-label className={cn("truncate", collapsed && "lg:hidden")}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
@@ -188,7 +296,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 lg:px-8">{children}</main>
+        <main ref={main} className="flex-1 px-4 py-6 lg:px-8">
+          {children}
+        </main>
       </div>
     </div>
   );

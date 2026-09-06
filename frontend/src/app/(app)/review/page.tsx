@@ -3,6 +3,7 @@
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Button,
   Card,
@@ -144,7 +145,7 @@ export default function ReviewQueuePage() {
                   <Th />
                 </tr>
               </thead>
-              <tbody>
+              <Reveal as="tbody" stagger="tr" deps={[data.page, data.content.length]}>
                 {data.content.map((report) => (
                   <tr key={report.id} className="transition hover:bg-surface-muted/50">
                     <Td className="font-medium text-primary">
@@ -185,7 +186,7 @@ export default function ReviewQueuePage() {
                     </Td>
                   </tr>
                 ))}
-              </tbody>
+              </Reveal>
             </Table>
 
             {data.totalPages > 1 && (

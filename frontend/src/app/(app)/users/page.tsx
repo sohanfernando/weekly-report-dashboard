@@ -2,6 +2,7 @@
 
 import { Plus, UserRoundX, Users } from "lucide-react";
 import { useState } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Alert,
   Button,
@@ -140,7 +141,7 @@ export default function UsersPage() {
                   <Th />
                 </tr>
               </thead>
-              <tbody>
+              <Reveal as="tbody" stagger="tr" deps={[data.page, data.content.length]}>
                 {data.content.map((user) => {
                   const isSelf = user.id === me?.id;
                   return (
@@ -216,7 +217,7 @@ export default function UsersPage() {
                     </tr>
                   );
                 })}
-              </tbody>
+              </Reveal>
             </Table>
 
             {data.totalPages > 1 && (

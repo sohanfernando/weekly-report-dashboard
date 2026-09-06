@@ -3,6 +3,7 @@
 import { Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Reveal } from "@/components/motion/Reveal";
 import {
   Card,
   EmptyState,
@@ -65,7 +66,7 @@ export default function TeamPage() {
                 <Th />
               </tr>
             </thead>
-            <tbody>
+            <Reveal as="tbody" stagger="tr" deps={[members.content.length]}>
               {members.content.map((member) => {
                 const row = stateByUser.get(member.id);
                 return (
@@ -93,7 +94,7 @@ export default function TeamPage() {
                   </tr>
                 );
               })}
-            </tbody>
+            </Reveal>
           </Table>
         ) : (
           <EmptyState
