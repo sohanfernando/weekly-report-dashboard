@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Weekly Reports">
+  <!--
+    App mark: a report, three lines with the last one short.
+
+    Drawn as solid shapes on a filled tile rather than a line-art glyph,
+    because a favicon is read at 16px where 1px strokes disappear. The brand
+    indigo is the tile, not the mark, so the icon stays legible on both light
+    and dark browser chrome without needing two variants.
+
+    The short line carries the approved green: it is the one detail that makes
+    this recognisable in a crowded tab strip.
+  -->
+  <rect width="32" height="32" rx="7" fill="#4F46E5" />
+  <rect x="8" y="9" width="16" height="4" rx="2" fill="#FFFFFF" />
+  <rect x="8" y="16" width="16" height="4" rx="2" fill="#FFFFFF" />
+  <rect x="8" y="23" width="9" height="4" rx="2" fill="#10B981" />
+</svg>
