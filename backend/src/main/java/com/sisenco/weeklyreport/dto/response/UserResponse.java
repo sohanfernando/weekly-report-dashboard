@@ -1,4 +1,4 @@
-package com.sisenco.weeklyreport.dto;
+package com.sisenco.weeklyreport.dto.response;
 
 import com.sisenco.weeklyreport.domain.Role;
 import com.sisenco.weeklyreport.domain.User;

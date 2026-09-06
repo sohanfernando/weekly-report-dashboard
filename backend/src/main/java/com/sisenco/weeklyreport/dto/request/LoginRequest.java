@@ -1,4 +1,4 @@
-package com.sisenco.weeklyreport.dto.auth;
+package com.sisenco.weeklyreport.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

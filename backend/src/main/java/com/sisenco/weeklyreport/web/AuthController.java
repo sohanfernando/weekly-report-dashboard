@@ -1,8 +1,8 @@
 package com.sisenco.weeklyreport.web;
 
-import com.sisenco.weeklyreport.dto.UserResponse;
-import com.sisenco.weeklyreport.dto.auth.LoginRequest;
-import com.sisenco.weeklyreport.dto.auth.RegisterRequest;
+import com.sisenco.weeklyreport.dto.response.UserResponse;
+import com.sisenco.weeklyreport.dto.request.LoginRequest;
+import com.sisenco.weeklyreport.dto.request.RegisterRequest;
 import com.sisenco.weeklyreport.security.AppUserPrincipal;
 import com.sisenco.weeklyreport.security.AuthCookieFactory;
 import com.sisenco.weeklyreport.service.AuthService;
