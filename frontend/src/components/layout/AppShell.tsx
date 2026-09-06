@@ -56,11 +56,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }, [isPending, user, router]);
 
-  // Close the drawer whenever navigation happens.
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
   if (isPending) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
@@ -94,7 +89,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
       >
         <div className="flex h-14 items-center justify-between px-5">
-          <Link href="/" className="text-sm font-semibold text-primary">
+          <Link
+            href="/"
+            onClick={() => setMobileOpen(false)}
+            className="text-sm font-semibold text-primary"
+          >
             Weekly Reports
           </Link>
           <button
@@ -115,6 +114,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                // Closed here rather than in an effect watching the pathname:
+                // on mobile the drawer covers the page, so a tap on one of
+                // these links is the only way navigation can start while it is
+                // open. Reacting to the route change instead would set state
+                // during render and cascade an extra render on every navigation.
+                onClick={() => setMobileOpen(false)}
                 className={cn(
                   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition",
                   active

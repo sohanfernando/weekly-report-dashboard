@@ -4,7 +4,7 @@ import { ArrowLeft, MessageSquareWarning } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ReportForm } from "@/components/report/ReportForm";
-import { Alert, Button, Card, CardBody, EmptyState, Loading, PageHeader } from "@/components/ui";
+import { Alert, Button, Card, EmptyState, Loading, PageHeader } from "@/components/ui";
 import { dateTime, weekRangeLabel } from "@/lib/format";
 import { useReport } from "@/lib/queries";
 

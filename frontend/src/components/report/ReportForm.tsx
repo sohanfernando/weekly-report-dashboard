@@ -4,7 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useFieldArray, useForm, type Control, type UseFormRegister } from "react-hook-form";
+import {
+  useFieldArray,
+  useForm,
+  useWatch,
+  type Control,
+  type UseFormRegister,
+} from "react-hook-form";
 import { z } from "zod";
 import {
   Alert,
@@ -132,7 +138,7 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
     register,
     control,
     handleSubmit,
-    watch,
+    getValues,
     setValue,
     formState: { errors },
   } = form;
@@ -141,15 +147,20 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
   const blockers = useFieldArray({ control, name: "blockers" });
   const achievements = useFieldArray({ control, name: "achievements" });
 
-  const weekStart = watch("weekStart");
+  // useWatch rather than form.watch(): it subscribes to just these fields and,
+  // unlike watch(), returns a value the React Compiler can reason about.
+  const weekStart = useWatch({ control, name: "weekStart" });
+  const blockerValues = useWatch({ control, name: "blockers" });
+  const achievementValues = useWatch({ control, name: "achievements" });
   const weekEnd = weekStart ? format(addDays(parseISO(weekStart), 6), "yyyy-MM-dd") : null;
 
   const busy = createReport.isPending || updateReport.isPending || submitReport.isPending;
 
   /** Exactly one blocker or achievement may be the key item, so selecting one clears the rest. */
   function selectKey(field: "blockers" | "achievements", index: number) {
-    const list = watch(field);
-    list.forEach((_, i) => setValue(`${field}.${i}.key`, i === index));
+    // getValues, not a subscription: this runs in a click handler and only
+    // needs the values as they are right now.
+    getValues(field).forEach((_, i) => setValue(`${field}.${i}.key`, i === index));
   }
 
   function toPayload(values: FormValues): SaveReportInput {
@@ -304,7 +315,7 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
         onSelectKey={(index) => selectKey("blockers", index)}
         register={register}
         name="blockers"
-        watchKey={(index) => !!watch(`blockers.${index}.key`)}
+        watchKey={(index) => !!blockerValues?.[index]?.key}
         errors={errors.blockers}
         showResolved
       />
@@ -323,7 +334,7 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
         onSelectKey={(index) => selectKey("achievements", index)}
         register={register}
         name="achievements"
-        watchKey={(index) => !!watch(`achievements.${index}.key`)}
+        watchKey={(index) => !!achievementValues?.[index]?.key}
         errors={errors.achievements}
       />
 
