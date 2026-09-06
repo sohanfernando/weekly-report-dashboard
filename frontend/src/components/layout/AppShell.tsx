@@ -195,9 +195,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         ref={sidebar}
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-border bg-surface",
+          // Pinned to the viewport rather than stretched to the page: the
+          // account footer must stay reachable however long the page is.
+          // bottom-auto because inset-y-0 (needed for the mobile drawer)
+          // would otherwise give the sticky element two opposing thresholds.
+          "lg:sticky lg:top-0 lg:bottom-auto lg:h-dvh lg:self-start",
           // CSS owns the drawer slide, GSAP owns the desktop width. Transitioning
           // "all" here would put both in charge of the same property.
-          "transition-transform duration-200 lg:static lg:translate-x-0",
+          "transition-transform duration-200 lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           // GSAP owns the desktop width; this keeps the collapsed rail correct
           // before hydration and on the reduced-motion path.
@@ -206,7 +211,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         <div
           className={cn(
-            "flex h-14 items-center gap-2 px-3",
+            "flex h-14 shrink-0 items-center gap-2 px-3",
             collapsed ? "lg:justify-center lg:px-0" : "justify-between px-5",
           )}
         >
@@ -244,7 +249,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav ref={nav} className={cn("flex-1 space-y-0.5 py-2", collapsed ? "lg:px-2" : "px-3")}>
+        <nav
+          ref={nav}
+          className={cn(
+            "min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain py-2",
+            collapsed ? "lg:px-2" : "px-3",
+          )}
+        >
           {items.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
@@ -279,7 +290,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:px-8">
+        {/* Sticky too, so the header does not scroll away from a sidebar that
+            stays put — the two are one piece of chrome. */}
+        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-4 lg:px-8">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -344,7 +357,7 @@ function SidebarFooter({ user, collapsed }: { user: User; collapsed: boolean }) 
     });
 
   return (
-    <div className={cn("border-t border-border p-3", collapsed && "lg:px-2")}>
+    <div className={cn("shrink-0 border-t border-border p-3", collapsed && "lg:px-2")}>
       {/* Collapsed: icon-only profile and sign out, stacked. */}
       <div className={cn("hidden flex-col items-center gap-1", collapsed && "lg:flex")}>
         <Link
