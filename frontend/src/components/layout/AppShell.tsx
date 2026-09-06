@@ -89,18 +89,18 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col bg-surface ring-1 ring-line transition-transform lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-border bg-surface transition-transform lg:static lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-14 items-center justify-between px-5">
-          <Link href="/" className="text-sm font-semibold text-foreground">
+          <Link href="/" className="text-sm font-semibold text-primary">
             Weekly Reports
           </Link>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="text-muted lg:hidden"
+            className="text-secondary lg:hidden"
             aria-label="Close menu"
           >
             <X className="size-5" />
@@ -118,8 +118,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className={cn(
                   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition",
                   active
-                    ? "bg-brand/10 font-medium text-brand"
-                    : "text-muted hover:bg-surface-muted hover:text-foreground",
+                    ? "bg-brand font-medium text-brand-foreground hover:bg-brand-hover"
+                    : "text-secondary hover:bg-surface-muted hover:text-primary",
                 )}
               >
                 {item.icon}
@@ -133,18 +133,18 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-3 border-b border-line bg-surface px-4 lg:px-8">
+        <header className="flex h-14 items-center gap-3 border-b border-border bg-surface px-4 lg:px-8">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="text-muted lg:hidden"
+            className="text-secondary lg:hidden"
             aria-label="Open menu"
           >
             <Menu className="size-5" />
           </button>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-foreground">{user.name}</p>
-            <p className="truncate text-xs text-muted">
+            <p className="truncate text-sm font-medium text-primary">{user.name}</p>
+            <p className="truncate text-xs text-secondary">
               {user.jobTitle ?? (user.role === "MANAGER" ? "Manager" : "Team member")}
             </p>
           </div>
@@ -164,10 +164,10 @@ function UserCard() {
   if (!user) return null;
 
   return (
-    <div className="border-t border-line p-3">
+    <div className="border-t border-border p-3">
       <div className="mb-2 px-2">
-        <p className="truncate text-xs font-medium text-foreground">{user.email}</p>
-        <p className="text-xs text-muted">{user.role === "MANAGER" ? "Manager" : "Team member"}</p>
+        <p className="truncate text-xs font-medium text-primary">{user.email}</p>
+        <p className="text-xs text-secondary">{user.role === "MANAGER" ? "Manager" : "Team member"}</p>
       </div>
       <button
         type="button"
@@ -177,7 +177,7 @@ function UserCard() {
           })
         }
         disabled={logout.isPending}
-        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-surface-muted hover:text-foreground disabled:opacity-50"
+        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-secondary transition hover:bg-surface-muted hover:text-primary disabled:opacity-50"
       >
         <LogOut className="size-4" />
         {logout.isPending ? "Signing out…" : "Sign out"}

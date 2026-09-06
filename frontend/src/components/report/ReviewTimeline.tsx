@@ -18,7 +18,7 @@ export function ReviewTimeline({ reviews }: { reviews: ReportReview[] }) {
       <Card>
         <CardHeader title="Review history" />
         <CardBody>
-          <p className="text-sm text-muted">Not reviewed yet.</p>
+          <p className="text-sm text-secondary">Not reviewed yet.</p>
         </CardBody>
       </Card>
     );
@@ -36,8 +36,8 @@ export function ReviewTimeline({ reviews }: { reviews: ReportReview[] }) {
                 className={cn(
                   "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full",
                   approved
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
-                    : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400",
+                    ? "bg-status-approved/10 text-status-approved"
+                    : "bg-status-correction/10 text-status-correction",
                 )}
               >
                 {approved ? (
@@ -47,14 +47,14 @@ export function ReviewTimeline({ reviews }: { reviews: ReportReview[] }) {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-foreground">
+                <p className="text-sm text-primary">
                   <span className="font-medium">{review.reviewerName}</span>{" "}
                   {approved ? "approved" : "requested changes on"}{" "}
-                  <span className="text-muted">version {review.versionNo}</span>
+                  <span className="text-secondary">version {review.versionNo}</span>
                 </p>
-                <p className="text-xs text-muted">{dateTime(review.createdAt)}</p>
+                <p className="text-xs text-secondary">{dateTime(review.createdAt)}</p>
                 {review.comment && (
-                  <p className="mt-1.5 whitespace-pre-wrap rounded-lg bg-surface-muted px-3 py-2 text-sm text-foreground">
+                  <p className="mt-1.5 whitespace-pre-wrap rounded-lg bg-surface-muted px-3 py-2 text-sm text-primary">
                     {review.comment}
                   </p>
                 )}

@@ -145,12 +145,12 @@ export default function UsersPage() {
                   const isSelf = user.id === me?.id;
                   return (
                     <tr key={user.id} className="transition hover:bg-surface-muted/50">
-                      <Td className="font-medium text-foreground">
+                      <Td className="font-medium text-primary">
                         {user.name}
-                        {isSelf && <span className="ml-2 text-xs text-muted">(you)</span>}
+                        {isSelf && <span className="ml-2 text-xs text-secondary">(you)</span>}
                       </Td>
-                      <Td className="text-muted">{user.email}</Td>
-                      <Td className="text-muted">{user.jobTitle ?? "—"}</Td>
+                      <Td className="text-secondary">{user.email}</Td>
+                      <Td className="text-secondary">{user.jobTitle ?? "—"}</Td>
                       <Td>
                         <Select
                           className="h-8 w-32 py-1 text-xs"
@@ -173,13 +173,13 @@ export default function UsersPage() {
                       <Td>
                         <span
                           className={
-                            user.active ? "text-emerald-600 dark:text-emerald-400" : "text-muted"
+                            user.active ? "text-status-approved" : "text-secondary"
                           }
                         >
                           {user.active ? "Active" : "Inactive"}
                         </span>
                       </Td>
-                      <Td className="text-muted">{shortDate(user.createdAt)}</Td>
+                      <Td className="text-secondary">{shortDate(user.createdAt)}</Td>
                       <Td className="text-right">
                         {!isSelf && (
                           <span className="inline-flex gap-1">
@@ -200,7 +200,7 @@ export default function UsersPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-rose-500"
+                                className="text-status-missing"
                                 title="Remove from the team"
                                 onClick={() => {
                                   setError(null);
@@ -221,7 +221,7 @@ export default function UsersPage() {
 
             {data.totalPages > 1 && (
               <div className="flex items-center justify-between px-4 py-3 text-sm">
-                <p className="text-muted">
+                <p className="text-secondary">
                   Page {data.page + 1} of {data.totalPages} · {data.totalElements} users
                 </p>
                 <div className="flex gap-2">
@@ -250,7 +250,7 @@ export default function UsersPage() {
         )}
       </Card>
 
-      <p className="mt-3 text-xs text-muted">
+      <p className="mt-3 text-xs text-secondary">
         Removing someone deactivates their account rather than deleting it, so their past reports
         stay readable. The last active manager cannot be demoted or removed.
       </p>

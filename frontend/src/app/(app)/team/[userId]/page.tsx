@@ -58,15 +58,15 @@ export default function MemberProfilePage() {
       <div className="mb-5">
         <Link
           href="/team"
-          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-sm text-secondary hover:text-primary"
         >
           <ArrowLeft className="size-4" /> Team
         </Link>
       </div>
 
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-foreground">{member.name}</h1>
-        <p className="mt-1 text-sm text-muted">
+        <h1 className="text-xl font-semibold text-primary">{member.name}</h1>
+        <p className="mt-1 text-sm text-secondary">
           {member.jobTitle ?? "Team member"} · {member.email}
           {!member.active && " · inactive"}
         </p>
@@ -129,15 +129,15 @@ export default function MemberProfilePage() {
             <tbody>
               {reports.data.content.map((report) => (
                 <tr key={report.id} className="transition hover:bg-surface-muted/50">
-                  <Td className="font-medium text-foreground">
+                  <Td className="font-medium text-primary">
                     {weekRangeLabel(report.weekStart, report.weekEnd)}
                   </Td>
-                  <Td className="text-muted">{report.projectName ?? "—"}</Td>
+                  <Td className="text-secondary">{report.projectName ?? "—"}</Td>
                   <Td>
                     <StatusBadge state={report.status} />
                   </Td>
-                  <Td className="tabular-nums text-muted">v{report.currentVersionNo ?? 1}</Td>
-                  <Td className="text-muted">{relative(report.submittedAt)}</Td>
+                  <Td className="tabular-nums text-secondary">v{report.currentVersionNo ?? 1}</Td>
+                  <Td className="text-secondary">{relative(report.submittedAt)}</Td>
                   <Td className="text-right">
                     <Link
                       href={

@@ -20,7 +20,7 @@ import {
   Th,
 } from "@/components/ui";
 import { ApiError } from "@/lib/api";
-import { shortDate } from "@/lib/format";
+import { CHART_SERIES, shortDate } from "@/lib/format";
 import {
   useDeleteProject,
   useMe,
@@ -29,7 +29,8 @@ import {
 } from "@/lib/queries";
 import type { Project } from "@/lib/types";
 
-const DEFAULT_COLORS = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+/** The chart series palette, so a project's colour is always one the charts use. */
+const DEFAULT_COLORS = [...CHART_SERIES];
 
 /**
  * Project and category management (Section 5) — a full page with a list and
@@ -112,10 +113,10 @@ export default function ProjectsPage() {
               {projects.map((project) => (
                 <tr key={project.id} className="transition hover:bg-surface-muted/50">
                   <Td>
-                    <span className="inline-flex items-center gap-2 font-medium text-foreground">
+                    <span className="inline-flex items-center gap-2 font-medium text-primary">
                       <span
                         className="size-2.5 rounded-full"
-                        style={{ backgroundColor: project.color ?? "#94a3b8" }}
+                        style={{ backgroundColor: project.color ?? "var(--color-status-draft)" }}
                       />
                       {project.name}
                     </span>
@@ -123,24 +124,22 @@ export default function ProjectsPage() {
                   <Td>
                     <Badge>{project.code}</Badge>
                   </Td>
-                  <Td className="max-w-md truncate text-muted">{project.description ?? "—"}</Td>
+                  <Td className="max-w-md truncate text-secondary">{project.description ?? "—"}</Td>
                   <Td>
                     <span
                       className={
-                        project.active
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-muted"
+                        project.active ? "text-status-approved" : "text-secondary"
                       }
                     >
                       {project.active ? "Active" : "Archived"}
                     </span>
                   </Td>
-                  <Td className="text-muted">{shortDate(project.createdAt)}</Td>
+                  <Td className="text-secondary">{shortDate(project.createdAt)}</Td>
                   {isManager && (
                     <Td className="text-right">
                       {confirmDelete === project.id ? (
                         <span className="inline-flex items-center gap-2">
-                          <span className="text-xs text-muted">Delete?</span>
+                          <span className="text-xs text-secondary">Delete?</span>
                           <Button
                             variant="danger"
                             size="sm"
@@ -181,7 +180,7 @@ export default function ProjectsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-rose-500"
+                            className="text-status-missing"
                             onClick={() => setConfirmDelete(project.id)}
                           >
                             <Trash2 className="size-3.5" />
@@ -203,7 +202,7 @@ export default function ProjectsPage() {
         )}
       </Card>
 
-      <p className="mt-3 text-xs text-muted">
+      <p className="mt-3 text-xs text-secondary">
         A project that any report already references cannot be deleted — archive it instead, which
         hides it from new reports while keeping past ones readable.
       </p>
@@ -291,7 +290,7 @@ function ProjectEditor({
                 style={{ backgroundColor: option }}
                 className={
                   color === option
-                    ? "size-7 rounded-full ring-2 ring-foreground ring-offset-2 ring-offset-[var(--surface)]"
+                    ? "size-7 rounded-full ring-2 ring-foreground ring-offset-2 ring-offset-[var(--color-surface)]"
                     : "size-7 rounded-full"
                 }
               />
@@ -300,12 +299,12 @@ function ProjectEditor({
         </Field>
 
         {project && (
-          <label className="flex items-center gap-2 text-sm text-foreground">
+          <label className="flex items-center gap-2 text-sm text-primary">
             <input
               type="checkbox"
               checked={active}
               onChange={(event) => setActive(event.target.checked)}
-              className="size-4 accent-[var(--brand)]"
+              className="size-4 accent-[var(--color-brand)]"
             />
             Active — offered when tagging a new report
           </label>

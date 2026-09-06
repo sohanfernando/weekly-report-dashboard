@@ -70,16 +70,16 @@ export default function TeamPage() {
                 const row = stateByUser.get(member.id);
                 return (
                   <tr key={member.id} className="transition hover:bg-surface-muted/50">
-                    <Td className="font-medium text-foreground">
+                    <Td className="font-medium text-primary">
                       {member.name}
                       {!member.active && (
-                        <span className="ml-2 text-xs text-muted">(inactive)</span>
+                        <span className="ml-2 text-xs text-secondary">(inactive)</span>
                       )}
                     </Td>
-                    <Td className="text-muted">{member.jobTitle ?? "—"}</Td>
-                    <Td className="text-muted">{member.email}</Td>
-                    <Td>{row ? <StatusBadge state={row.state} /> : <span className="text-muted">—</span>}</Td>
-                    <Td className="text-muted">
+                    <Td className="text-secondary">{member.jobTitle ?? "—"}</Td>
+                    <Td className="text-secondary">{member.email}</Td>
+                    <Td>{row ? <StatusBadge state={row.state} /> : <span className="text-secondary">—</span>}</Td>
+                    <Td className="text-secondary">
                       {row?.submittedAt ? relative(row.submittedAt) : "—"}
                     </Td>
                     <Td className="text-right">

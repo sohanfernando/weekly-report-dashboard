@@ -17,11 +17,12 @@ import {
 } from "recharts";
 import { Card, CardHeader, EmptyState } from "@/components/ui";
 import {
+  CHART_SERIES,
   STATUS_CHART_COLOR,
   TASK_TYPE_COLOR,
   TASK_TYPE_LABEL,
   hours,
-  weekRangeLabel,
+  seriesColor,
 } from "@/lib/format";
 import type {
   MemberStatusBreakdown,
@@ -34,13 +35,19 @@ import { format, parseISO } from "date-fns";
 /**
  * Dashboard charts.
  *
- * Colours come from the shared palette in lib/format so a status or a project
- * looks the same in a chart as it does in a badge — a reader should never have
- * to relearn what amber means between two panels on one screen.
+ * Series colours come from the one ordered palette in lib/format, so the nth
+ * series is the same colour in every chart. The one deliberate exception is the
+ * status chart, which uses the status palette instead — a bar labelled
+ * "Approved" has to be the same green as an Approved badge, or the dashboard
+ * teaches two different colour languages on one screen.
+ *
+ * Recharts takes colours as literals rather than classes, so these read the hex
+ * values directly. Axis and grid chrome uses the theme's CSS variables, which
+ * Recharts passes straight through to SVG attributes.
  */
 
-const AXIS = { stroke: "var(--muted)", fontSize: 11 };
-const GRID = "var(--border)";
+const AXIS = { stroke: "var(--color-secondary)", fontSize: 11 };
+const GRID = "var(--color-border)";
 
 function ChartCard({
   title,
@@ -74,13 +81,13 @@ function ChartCard({
 /** Shared tooltip styling so all four charts read as one system. */
 const tooltipStyle = {
   contentStyle: {
-    background: "var(--surface)",
-    border: "1px solid var(--border)",
+    background: "var(--color-surface)",
+    border: "1px solid var(--color-border)",
     borderRadius: "0.5rem",
     fontSize: "12px",
-    color: "var(--foreground)",
+    color: "var(--color-primary)",
   },
-  labelStyle: { color: "var(--muted)", fontSize: "11px" },
+  labelStyle: { color: "var(--color-secondary)", fontSize: "11px" },
 };
 
 export function TasksTrendChart({ data }: { data: WeeklyTrendPoint[] }) {
@@ -105,16 +112,17 @@ export function TasksTrendChart({ data }: { data: WeeklyTrendPoint[] }) {
           type="monotone"
           dataKey="completedTasks"
           name="Completed"
-          stroke="#4f46e5"
+          stroke={seriesColor(0)}
           strokeWidth={2}
           dot={{ r: 3 }}
           activeDot={{ r: 5 }}
         />
+        {/* Second series, dashed: it is a reference line rather than a peer. */}
         <Line
           type="monotone"
           dataKey="totalTasks"
           name="Total"
-          stroke="#94a3b8"
+          stroke={seriesColor(1)}
           strokeWidth={1.5}
           strokeDasharray="4 4"
           dot={false}
@@ -147,8 +155,8 @@ export function WorkloadChart({ data }: { data: ProjectWorkload[] }) {
         <YAxis tick={AXIS} tickLine={false} axisLine={false} />
         <Tooltip {...tooltipStyle} formatter={(value) => hours(Number(value))} />
         <Bar dataKey="hoursSpent" name="Hours" radius={[4, 4, 0, 0]}>
-          {data.map((entry) => (
-            <Cell key={entry.projectId} fill={entry.projectColor ?? "#4f46e5"} />
+          {data.map((entry, index) => (
+            <Cell key={entry.projectId} fill={seriesColor(index)} />
           ))}
         </Bar>
       </BarChart>
@@ -211,8 +219,8 @@ export function StatusByMemberChart({ data }: { data: MemberStatusBreakdown[] })
         <CartesianGrid stroke={GRID} strokeDasharray="3 3" vertical={false} />
         <XAxis dataKey="short" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} />
         <YAxis tick={AXIS} tickLine={false} axisLine={false} allowDecimals={false} />
-        <Tooltip {...tooltipStyle} />
         <Legend wrapperStyle={{ fontSize: 11 }} />
+        <Tooltip {...tooltipStyle} />
         <Bar dataKey="approved" name="Approved" stackId="s" fill={STATUS_CHART_COLOR.APPROVED} />
         <Bar
           dataKey="needsCorrection"
@@ -236,12 +244,11 @@ export function StatusByMemberChart({ data }: { data: MemberStatusBreakdown[] })
 export function MemberTrendChart({ data }: { data: WeeklyTrendPoint[] }) {
   const points = data.map((point) => ({
     ...point,
-    label: weekRangeLabel(point.weekStart, point.weekStart),
     short: format(parseISO(point.weekStart), "d MMM"),
   }));
 
   if (points.length === 0) {
-    return <p className="py-8 text-center text-sm text-muted">No completed tasks yet.</p>;
+    return <p className="py-8 text-center text-sm text-secondary">No completed tasks yet.</p>;
   }
 
   return (
@@ -256,7 +263,7 @@ export function MemberTrendChart({ data }: { data: WeeklyTrendPoint[] }) {
             type="monotone"
             dataKey="completedTasks"
             name="Completed tasks"
-            stroke="#4f46e5"
+            stroke={CHART_SERIES[0]}
             strokeWidth={2}
             dot={{ r: 3 }}
           />

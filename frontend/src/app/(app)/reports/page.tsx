@@ -81,7 +81,7 @@ export default function MyReportsPage() {
               type="date"
               value={filters.from ?? ""}
               onChange={(event) => update({ from: event.target.value })}
-              className="w-full rounded-lg bg-surface px-3 py-2 text-sm ring-1 ring-line focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg bg-surface px-3 py-2 text-sm ring-1 ring-border focus:ring-2 focus:ring-brand"
             />
           </Field>
 
@@ -90,7 +90,7 @@ export default function MyReportsPage() {
               type="date"
               value={filters.to ?? ""}
               onChange={(event) => update({ to: event.target.value })}
-              className="w-full rounded-lg bg-surface px-3 py-2 text-sm ring-1 ring-line focus:ring-2 focus:ring-brand"
+              className="w-full rounded-lg bg-surface px-3 py-2 text-sm ring-1 ring-border focus:ring-2 focus:ring-brand"
             />
           </Field>
         </div>
@@ -124,28 +124,28 @@ export default function MyReportsPage() {
               <tbody>
                 {data.content.map((report) => (
                   <tr key={report.id} className="transition hover:bg-surface-muted/50">
-                    <Td className="font-medium text-foreground">
+                    <Td className="font-medium text-primary">
                       {weekRangeLabel(report.weekStart, report.weekEnd)}
                     </Td>
                     <Td>
                       {report.projectName ? (
-                        <span className="inline-flex items-center gap-1.5 text-muted">
+                        <span className="inline-flex items-center gap-1.5 text-secondary">
                           <span
                             className="size-2 rounded-full"
-                            style={{ backgroundColor: report.projectColor ?? "#94a3b8" }}
+                            style={{ backgroundColor: report.projectColor ?? "var(--color-status-draft)" }}
                           />
                           {report.projectName}
                         </span>
                       ) : (
-                        <span className="text-muted">—</span>
+                        <span className="text-secondary">—</span>
                       )}
                     </Td>
                     <Td>
                       <StatusBadge state={report.status} />
                     </Td>
-                    <Td className="tabular-nums text-muted">v{report.currentVersionNo ?? 1}</Td>
-                    <Td className="text-muted">{shortDate(report.submittedAt)}</Td>
-                    <Td className="text-muted">{relative(report.updatedAt)}</Td>
+                    <Td className="tabular-nums text-secondary">v{report.currentVersionNo ?? 1}</Td>
+                    <Td className="text-secondary">{shortDate(report.submittedAt)}</Td>
+                    <Td className="text-secondary">{relative(report.updatedAt)}</Td>
                     <Td className="text-right">
                       <Link
                         href={`/reports/${report.id}`}
@@ -163,7 +163,7 @@ export default function MyReportsPage() {
 
             {data.totalPages > 1 && (
               <div className="flex items-center justify-between px-4 py-3 text-sm">
-                <p className="text-muted">
+                <p className="text-secondary">
                   Page {data.page + 1} of {data.totalPages} · {data.totalElements} reports
                 </p>
                 <div className="flex gap-2">

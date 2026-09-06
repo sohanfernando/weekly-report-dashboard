@@ -72,7 +72,7 @@ export default function ReportDetailPage() {
       <div className="mb-5">
         <Link
           href={isOwner ? "/reports" : "/review"}
-          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-sm text-secondary hover:text-primary"
         >
           <ArrowLeft className="size-4" />
           {isOwner ? "My reports" : "Review queue"}
@@ -82,7 +82,7 @@ export default function ReportDetailPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-xl font-semibold text-foreground">
+            <h1 className="text-xl font-semibold text-primary">
               {weekRangeLabel(report.weekStart, report.weekEnd)}
             </h1>
             <StatusBadge state={report.status} />
@@ -90,7 +90,7 @@ export default function ReportDetailPage() {
               <Badge>v{report.currentVersion.versionNo}</Badge>
             )}
           </div>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-secondary">
             {isOwner ? "Your report" : report.userName}
             {report.projectName && ` · ${report.projectName}`}
             {report.submittedAt && ` · submitted ${dateTime(report.submittedAt)}`}
@@ -135,18 +135,18 @@ export default function ReportDetailPage() {
       {/* The manager's latest comment is the first thing the owner needs to see. */}
       {needsCorrection && latestReview?.comment && (
         <div className="mb-5">
-          <Card className="ring-amber-300 dark:ring-amber-900">
+          <Card className="border-status-correction/40">
             <CardBody>
               <div className="flex gap-3">
-                <MessageSquareWarning className="size-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                <MessageSquareWarning className="size-5 shrink-0 text-status-correction" />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-sm font-medium text-primary">
                     {latestReview.reviewerName} asked for changes
                   </p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-primary">
                     {latestReview.comment}
                   </p>
-                  <p className="mt-1.5 text-xs text-muted">
+                  <p className="mt-1.5 text-xs text-secondary">
                     On version {latestReview.versionNo} · {dateTime(latestReview.createdAt)}
                     {report.currentVersion &&
                       latestReview.versionNo !== report.currentVersion.versionNo &&

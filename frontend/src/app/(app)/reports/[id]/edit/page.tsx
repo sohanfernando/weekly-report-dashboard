@@ -63,7 +63,7 @@ export default function EditReportPage() {
       <div className="mb-5">
         <Link
           href={`/reports/${report.id}`}
-          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-sm text-secondary hover:text-primary"
         >
           <ArrowLeft className="size-4" /> Back to the report
         </Link>

@@ -49,8 +49,8 @@ function LoginForm() {
   return (
     <>
       <div className="mb-6 text-center">
-        <h1 className="text-lg font-semibold text-foreground">Weekly Reports</h1>
-        <p className="mt-1 text-sm text-muted">Sign in to file or review this week&apos;s report.</p>
+        <h1 className="text-lg font-semibold text-primary">Weekly Reports</h1>
+        <p className="mt-1 text-sm text-secondary">Sign in to file or review this week&apos;s report.</p>
       </div>
 
       <Card>
@@ -88,7 +88,7 @@ function LoginForm() {
         </CardBody>
       </Card>
 
-      <p className="mt-4 text-center text-sm text-muted">
+      <p className="mt-4 text-center text-sm text-secondary">
         No account?{" "}
         <Link href="/register" className="font-medium text-brand hover:underline">
           Register

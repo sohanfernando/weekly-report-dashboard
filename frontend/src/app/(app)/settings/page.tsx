@@ -100,7 +100,7 @@ function ProfileCard({
           <Input value={email} disabled readOnly />
         </Field>
 
-        <div className="flex items-center gap-2 text-xs text-muted">
+        <div className="flex items-center gap-2 text-xs text-secondary">
           <Badge>{role === "MANAGER" ? "Manager" : "Team member"}</Badge>
           {joined && <span>Joined {shortDate(joined)}</span>}
         </div>
@@ -224,7 +224,7 @@ function PasswordCard() {
           </Button>
         </div>
 
-        <p className="text-xs text-muted">
+        <p className="text-xs text-secondary">
           Your session stays valid after a password change. Sign out on other devices by waiting for
           the token to expire.
         </p>

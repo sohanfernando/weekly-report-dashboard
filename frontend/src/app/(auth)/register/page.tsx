@@ -78,8 +78,8 @@ export default function RegisterPage() {
   return (
     <>
       <div className="mb-6 text-center">
-        <h1 className="text-lg font-semibold text-foreground">Create your account</h1>
-        <p className="mt-1 text-sm text-muted">
+        <h1 className="text-lg font-semibold text-primary">Create your account</h1>
+        <p className="mt-1 text-sm text-secondary">
           New accounts join as team members. A manager can change that later.
         </p>
       </div>
@@ -128,7 +128,7 @@ export default function RegisterPage() {
         </CardBody>
       </Card>
 
-      <p className="mt-4 text-center text-sm text-muted">
+      <p className="mt-4 text-center text-sm text-secondary">
         Already have one?{" "}
         <Link href="/login" className="font-medium text-brand hover:underline">
           Sign in

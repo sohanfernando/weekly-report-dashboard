@@ -32,7 +32,7 @@ export function VersionHistory({
       <Card>
         <CardHeader title="Version history" />
         <CardBody>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-secondary">
             Only one version so far. A new one is created each time a manager sends the report back
             for correction.
           </p>
@@ -52,20 +52,20 @@ export function VersionHistory({
           const isCurrent = version.versionNo === currentVersionNo;
           const isOpen = expanded === version.versionNo;
           return (
-            <div key={version.id} className="rounded-lg ring-1 ring-line">
+            <div key={version.id} className="rounded-lg ring-1 ring-border">
               <button
                 type="button"
                 onClick={() => setExpanded(isOpen ? null : version.versionNo)}
                 aria-expanded={isOpen}
                 className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-muted/60"
               >
-                <History className="size-4 shrink-0 text-muted" />
+                <History className="size-4 shrink-0 text-secondary" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-sm font-medium text-primary">
                     Version {version.versionNo}
                     {isCurrent && <span className="ml-2 text-xs text-brand">current</span>}
                   </p>
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-secondary">
                     {version.submittedAt
                       ? `Submitted ${dateTime(version.submittedAt)}`
                       : "Not yet submitted"}
@@ -74,12 +74,12 @@ export function VersionHistory({
                   </p>
                 </div>
                 <ChevronDown
-                  className={cn("size-4 shrink-0 text-muted transition", isOpen && "rotate-180")}
+                  className={cn("size-4 shrink-0 text-secondary transition", isOpen && "rotate-180")}
                 />
               </button>
 
               {isOpen && (
-                <div className="border-t border-line bg-background/40 p-4">
+                <div className="border-t border-border bg-background/40 p-4">
                   <ReportView version={version} />
                 </div>
               )}

@@ -1,5 +1,5 @@
 import { format, formatDistanceToNow, parseISO, startOfWeek, addWeeks } from "date-fns";
-import type { ReportStatus, SubmissionState, TaskStatus, TaskType } from "./types";
+import type { SubmissionState, TaskStatus, TaskType } from "./types";
 
 /**
  * A report's week is always identified by its Monday, and the backend rejects
@@ -51,28 +51,50 @@ export const STATUS_LABEL: Record<SubmissionState, string> = {
 };
 
 /**
- * Status colours, used by badges and charts alike so a status looks the same
- * everywhere. Amber for "needs correction" rather than red: it is a normal step
- * in the review cycle, not a failure.
+ * The one place a report status becomes a colour.
+ *
+ * Every status rendering in the app — history table, dashboard, report detail,
+ * review queue — goes through {@link STATUS_STYLE} via the StatusBadge, so a
+ * status can never mean two different colours on two different screens.
+ *
+ * Each badge is the status colour as text on a 10% tint of itself, with a
+ * matching ring. That keeps the hue identifiable while the label stays legible,
+ * which solid fills at these sizes do not.
  */
 export const STATUS_STYLE: Record<SubmissionState, string> = {
-  DRAFT: "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700",
-  SUBMITTED: "bg-sky-100 text-sky-800 ring-sky-200 dark:bg-sky-950 dark:text-sky-300 dark:ring-sky-900",
-  NEEDS_CORRECTION:
-    "bg-amber-100 text-amber-900 ring-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:ring-amber-900",
-  APPROVED:
-    "bg-emerald-100 text-emerald-800 ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-900",
-  NOT_STARTED:
-    "bg-rose-100 text-rose-800 ring-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:ring-rose-900",
+  DRAFT: "bg-status-draft/10 text-status-draft ring-status-draft/25",
+  SUBMITTED: "bg-status-submitted/10 text-status-submitted ring-status-submitted/25",
+  NEEDS_CORRECTION: "bg-status-correction/10 text-status-correction ring-status-correction/25",
+  APPROVED: "bg-status-approved/10 text-status-approved ring-status-approved/25",
+  NOT_STARTED: "bg-status-missing/10 text-status-missing ring-status-missing/25",
 };
 
-export const STATUS_CHART_COLOR: Record<ReportStatus | "NOT_STARTED", string> = {
-  DRAFT: "#94a3b8",
-  SUBMITTED: "#0ea5e9",
-  NEEDS_CORRECTION: "#f59e0b",
-  APPROVED: "#10b981",
-  NOT_STARTED: "#f43f5e",
+/** The same status colours as literals, for Recharts, which cannot read classes. */
+export const STATUS_CHART_COLOR: Record<SubmissionState, string> = {
+  DRAFT: "#9CA3AF",
+  SUBMITTED: "#3B82F6",
+  NEEDS_CORRECTION: "#F59E0B",
+  APPROVED: "#10B981",
+  NOT_STARTED: "#EF4444",
 };
+
+/**
+ * Chart series order, applied consistently across every chart so the nth series
+ * is always the same colour wherever a reader looks.
+ */
+export const CHART_SERIES = [
+  "#4F46E5",
+  "#3B82F6",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#8B5CF6",
+] as const;
+
+/** Picks a series colour by index, wrapping if there are more series than colours. */
+export function seriesColor(index: number): string {
+  return CHART_SERIES[index % CHART_SERIES.length];
+}
 
 export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
   NOT_STARTED: "Not started",
@@ -89,13 +111,13 @@ export const TASK_TYPE_LABEL: Record<TaskType, string> = {
   OTHER: "Other",
 };
 
-/** Distinct hues for the task-type split, ordered to stay legible side by side. */
+/** Task types take the first five series colours, in the system's order. */
 export const TASK_TYPE_COLOR: Record<TaskType, string> = {
-  DEVELOPMENT: "#4f46e5",
-  TESTING: "#0ea5e9",
-  MEETINGS: "#f59e0b",
-  DOCUMENTATION: "#10b981",
-  OTHER: "#94a3b8",
+  DEVELOPMENT: CHART_SERIES[0],
+  TESTING: CHART_SERIES[1],
+  MEETINGS: CHART_SERIES[2],
+  DOCUMENTATION: CHART_SERIES[3],
+  OTHER: CHART_SERIES[4],
 };
 
 export function hours(value: number | null | undefined): string {

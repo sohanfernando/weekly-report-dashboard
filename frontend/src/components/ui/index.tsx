@@ -17,7 +17,7 @@ import type { SubmissionState } from "@/lib/types";
  *
  * Deliberately not a component library: the app needs about ten primitives, and
  * hand-writing them keeps the dependency list short and every style decision
- * visible in one file.
+ * visible in one file. Colours come only from the theme tokens in globals.css.
  */
 
 // ----------------------------------------------------------------- button
@@ -26,11 +26,11 @@ type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md";
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-brand text-brand-foreground hover:opacity-90 disabled:opacity-50",
+  primary: "bg-brand text-brand-foreground hover:bg-brand-hover disabled:opacity-50",
   secondary:
-    "bg-surface text-foreground ring-1 ring-line hover:bg-surface-muted disabled:opacity-50",
-  ghost: "text-muted hover:bg-surface-muted hover:text-foreground disabled:opacity-50",
-  danger: "bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50",
+    "bg-surface text-primary ring-1 ring-border hover:bg-surface-muted disabled:opacity-50",
+  ghost: "text-secondary hover:bg-surface-muted hover:text-primary disabled:opacity-50",
+  danger: "bg-status-missing text-white hover:brightness-95 disabled:opacity-50",
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
@@ -75,7 +75,7 @@ export function Button({
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={cn("rounded-xl bg-surface ring-1 ring-line", className)}>{children}</div>
+    <div className={cn("rounded-xl border border-border bg-surface", className)}>{children}</div>
   );
 }
 
@@ -89,10 +89,10 @@ export function CardHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+    <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
       <div className="min-w-0">
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-        {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
+        <h2 className="text-sm font-semibold text-primary">{title}</h2>
+        {description && <p className="mt-0.5 text-xs text-secondary">{description}</p>}
       </div>
       {action}
     </div>
@@ -115,16 +115,17 @@ export function Label({
   required?: boolean;
 }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-medium text-foreground">
+    <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-medium text-primary">
       {children}
-      {required && <span className="ml-0.5 text-rose-500">*</span>}
+      {required && <span className="ml-0.5 text-status-missing">*</span>}
     </label>
   );
 }
 
 const FIELD_BASE =
-  "w-full rounded-lg bg-surface px-3 py-2 text-sm text-foreground ring-1 ring-line " +
-  "placeholder:text-muted/60 focus:ring-2 focus:ring-brand disabled:opacity-60";
+  "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-primary " +
+  "placeholder:text-secondary/60 focus:border-brand focus:ring-1 focus:ring-brand " +
+  "disabled:opacity-60";
 
 export function Input({
   className,
@@ -135,7 +136,11 @@ export function Input({
     <input
       {...props}
       aria-invalid={invalid || undefined}
-      className={cn(FIELD_BASE, invalid && "ring-rose-400 focus:ring-rose-500", className)}
+      className={cn(
+        FIELD_BASE,
+        invalid && "border-status-missing focus:border-status-missing focus:ring-status-missing",
+        className,
+      )}
     />
   );
 }
@@ -149,7 +154,12 @@ export function Textarea({
     <textarea
       {...props}
       aria-invalid={invalid || undefined}
-      className={cn(FIELD_BASE, "min-h-24 resize-y", invalid && "ring-rose-400", className)}
+      className={cn(
+        FIELD_BASE,
+        "min-h-24 resize-y",
+        invalid && "border-status-missing focus:border-status-missing focus:ring-status-missing",
+        className,
+      )}
     />
   );
 }
@@ -164,7 +174,12 @@ export function Select({
     <select
       {...props}
       aria-invalid={invalid || undefined}
-      className={cn(FIELD_BASE, "appearance-none pr-8", invalid && "ring-rose-400", className)}
+      className={cn(
+        FIELD_BASE,
+        "appearance-none pr-8",
+        invalid && "border-status-missing",
+        className,
+      )}
     >
       {children}
     </select>
@@ -198,9 +213,9 @@ export function Field({
       )}
       {children}
       {error ? (
-        <p className="mt-1 text-xs text-rose-500">{error}</p>
+        <p className="mt-1 text-xs text-status-missing">{error}</p>
       ) : hint ? (
-        <p className="mt-1 text-xs text-muted">{hint}</p>
+        <p className="mt-1 text-xs text-secondary">{hint}</p>
       ) : null}
     </div>
   );
@@ -208,6 +223,11 @@ export function Field({
 
 // ---------------------------------------------------------------- badges
 
+/**
+ * The single rendering of a report status anywhere in the app. Every screen
+ * uses this, so Draft, Submitted, Needs correction and Approved always carry
+ * their own colour from the design system.
+ */
 export function StatusBadge({ state }: { state: SubmissionState }) {
   return (
     <span
@@ -233,7 +253,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full bg-surface-muted px-2 py-0.5 text-xs text-foreground",
+        "inline-flex items-center gap-1.5 rounded-full bg-surface-muted px-2 py-0.5 text-xs text-primary",
         className,
       )}
     >
@@ -265,7 +285,7 @@ export function Th({ children, className }: { children?: ReactNode; className?: 
     <th
       scope="col"
       className={cn(
-        "border-b border-line px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-muted",
+        "border-b border-border px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-secondary",
         className,
       )}
     >
@@ -275,18 +295,20 @@ export function Th({ children, className }: { children?: ReactNode; className?: 
 }
 
 export function Td({ children, className }: { children?: ReactNode; className?: string }) {
-  return <td className={cn("border-b border-line px-4 py-3 align-middle", className)}>{children}</td>;
+  return (
+    <td className={cn("border-b border-border px-4 py-3 align-middle", className)}>{children}</td>
+  );
 }
 
 // ----------------------------------------------------------------- state
 
 export function Spinner({ className }: { className?: string }) {
-  return <Loader2 className={cn("size-5 animate-spin text-muted", className)} aria-hidden />;
+  return <Loader2 className={cn("size-5 animate-spin text-secondary", className)} aria-hidden />;
 }
 
 export function Loading({ label = "Loading" }: { label?: string }) {
   return (
-    <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted">
+    <div className="flex items-center justify-center gap-2 py-10 text-sm text-secondary">
       <Spinner />
       {label}…
     </div>
@@ -306,9 +328,9 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
-      {icon && <div className="text-muted">{icon}</div>}
-      <p className="text-sm font-medium text-foreground">{title}</p>
-      {description && <p className="max-w-sm text-xs text-muted">{description}</p>}
+      {icon && <div className="text-secondary">{icon}</div>}
+      <p className="text-sm font-medium text-primary">{title}</p>
+      {description && <p className="max-w-sm text-xs text-secondary">{description}</p>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   );
@@ -321,13 +343,13 @@ export function Alert({
   tone?: "error" | "info" | "success" | "warning";
   children: ReactNode;
 }) {
+  // Tones borrow the status palette so a warning here matches a "needs
+  // correction" badge elsewhere, rather than introducing a second amber.
   const tones = {
-    error: "bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:ring-rose-900",
-    info: "bg-sky-50 text-sky-800 ring-sky-200 dark:bg-sky-950/50 dark:text-sky-300 dark:ring-sky-900",
-    success:
-      "bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-900",
-    warning:
-      "bg-amber-50 text-amber-900 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-900",
+    error: "bg-status-missing/10 text-status-missing ring-status-missing/25",
+    info: "bg-status-submitted/10 text-status-submitted ring-status-submitted/25",
+    success: "bg-status-approved/10 text-status-approved ring-status-approved/25",
+    warning: "bg-status-correction/10 text-status-correction ring-status-correction/25",
   };
   return (
     <div className={cn("rounded-lg px-4 py-3 text-sm ring-1 ring-inset", tones[tone])} role="alert">
@@ -349,17 +371,18 @@ export function StatTile({
   tone?: "default" | "warning" | "danger" | "success";
 }) {
   const toneClass = {
-    default: "text-foreground",
-    warning: "text-amber-600 dark:text-amber-400",
-    danger: "text-rose-600 dark:text-rose-400",
-    success: "text-emerald-600 dark:text-emerald-400",
+    default: "text-primary",
+    warning: "text-status-correction",
+    danger: "text-status-missing",
+    success: "text-status-approved",
   }[tone ?? "default"];
 
   return (
     <Card className="p-5">
-      <p className="text-xs font-medium text-muted">{label}</p>
-      <p className={cn("mt-1 text-2xl font-semibold tabular-nums", toneClass)}>{value}</p>
-      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+      <p className="text-xs font-medium text-secondary">{label}</p>
+      {/* Metric numbers are the one place the system uses 700. */}
+      <p className={cn("mt-1 text-2xl font-bold tabular-nums", toneClass)}>{value}</p>
+      {hint && <p className="mt-1 text-xs text-secondary">{hint}</p>}
     </Card>
   );
 }
@@ -376,8 +399,8 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-xl font-semibold text-foreground">{title}</h1>
-        {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+        <h1 className="text-xl font-semibold text-primary">{title}</h1>
+        {description && <p className="mt-1 text-sm text-secondary">{description}</p>}
       </div>
       {action}
     </div>

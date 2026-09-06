@@ -69,7 +69,7 @@ export default function DashboardPage() {
             <Button variant="secondary" size="sm" onClick={() => setWeek(shiftWeeks(week, -1))}>
               <ChevronLeft className="size-4" />
             </Button>
-            <div className="min-w-44 rounded-lg bg-surface px-3 py-1.5 text-center text-sm ring-1 ring-line">
+            <div className="min-w-44 rounded-lg bg-surface px-3 py-1.5 text-center text-sm ring-1 ring-border">
               {weekRangeLabel(week, weekEnd)}
             </div>
             <Button
@@ -147,15 +147,15 @@ export default function DashboardPage() {
             <tbody>
               {submissions.data.map((row) => (
                 <tr key={row.userId} className="transition hover:bg-surface-muted/50">
-                  <Td className="font-medium text-foreground">{row.userName}</Td>
-                  <Td className="text-muted">{row.jobTitle ?? "—"}</Td>
+                  <Td className="font-medium text-primary">{row.userName}</Td>
+                  <Td className="text-secondary">{row.jobTitle ?? "—"}</Td>
                   <Td>
                     <StatusBadge state={row.state} />
                   </Td>
-                  <Td className="tabular-nums text-muted">
+                  <Td className="tabular-nums text-secondary">
                     {row.versionNo ? `v${row.versionNo}` : "—"}
                   </Td>
-                  <Td className="text-muted">{row.submittedAt ? relative(row.submittedAt) : "—"}</Td>
+                  <Td className="text-secondary">{row.submittedAt ? relative(row.submittedAt) : "—"}</Td>
                   <Td className="text-right">
                     {row.reportId ? (
                       <Link
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                     ) : (
                       <Link
                         href={`/team/${row.userId}`}
-                        className="text-sm text-muted hover:underline"
+                        className="text-sm text-secondary hover:underline"
                       >
                         Profile
                       </Link>
@@ -220,9 +220,9 @@ export default function DashboardPage() {
               <Loading />
             ) : teamSection.data && teamSection.data.length > 0 ? (
               teamSection.data.map((item) => (
-                <div key={item.userId} className="rounded-lg bg-surface-muted/50 p-3 ring-1 ring-line">
+                <div key={item.userId} className="rounded-lg bg-surface-muted/50 p-3 ring-1 ring-border">
                   <div className="mb-1.5 flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground">{item.userName}</p>
+                    <p className="text-sm font-medium text-primary">{item.userName}</p>
                     <Link
                       href={`/reports/${item.reportId}`}
                       className="text-xs text-brand hover:underline"
@@ -231,19 +231,19 @@ export default function DashboardPage() {
                     </Link>
                   </div>
                   {item.entries.length === 0 ? (
-                    <p className="text-sm text-muted">Nothing reported.</p>
+                    <p className="text-sm text-secondary">Nothing reported.</p>
                   ) : (
                     <ul className="space-y-1">
                       {item.entries.map((entry, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm text-foreground">
+                        <li key={index} className="flex items-start gap-2 text-sm text-primary">
                           <span
                             className={
                               entry.key
-                                ? "mt-1.5 size-1.5 shrink-0 rounded-full bg-amber-500"
-                                : "mt-1.5 size-1.5 shrink-0 rounded-full bg-slate-400"
+                                ? "mt-1.5 size-1.5 shrink-0 rounded-full bg-status-correction"
+                                : "mt-1.5 size-1.5 shrink-0 rounded-full bg-status-draft"
                             }
                           />
-                          <span className={entry.resolved ? "text-muted line-through" : undefined}>
+                          <span className={entry.resolved ? "text-secondary line-through" : undefined}>
                             {entry.description}
                           </span>
                         </li>
@@ -270,12 +270,12 @@ export default function DashboardPage() {
                   <span
                     className={
                       item.action === "APPROVE"
-                        ? "mt-1.5 size-2 shrink-0 rounded-full bg-emerald-500"
-                        : "mt-1.5 size-2 shrink-0 rounded-full bg-amber-500"
+                        ? "mt-1.5 size-2 shrink-0 rounded-full bg-status-approved"
+                        : "mt-1.5 size-2 shrink-0 rounded-full bg-status-correction"
                     }
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-foreground">
+                    <p className="text-sm text-primary">
                       <span className="font-medium">{item.reviewerName}</span>{" "}
                       {item.action === "APPROVE" ? "approved" : "requested changes on"}{" "}
                       <Link href={`/reports/${item.reportId}`} className="text-brand hover:underline">
@@ -284,9 +284,9 @@ export default function DashboardPage() {
                       &apos;s report
                     </p>
                     {item.comment && (
-                      <p className="mt-0.5 line-clamp-2 text-xs text-muted">{item.comment}</p>
+                      <p className="mt-0.5 line-clamp-2 text-xs text-secondary">{item.comment}</p>
                     )}
-                    <p className="mt-0.5 text-xs text-muted">
+                    <p className="mt-0.5 text-xs text-secondary">
                       v{item.versionNo} · {dateTime(item.createdAt)}
                     </p>
                   </div>

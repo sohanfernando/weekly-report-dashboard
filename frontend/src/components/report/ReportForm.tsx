@@ -274,7 +274,7 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
           ))}
 
           {tasks.fields.length === 0 && (
-            <p className="py-4 text-center text-sm text-muted">
+            <p className="py-4 text-center text-sm text-secondary">
               No tasks yet. Add at least one before submitting.
             </p>
           )}
@@ -364,7 +364,7 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
       </Card>
 
       {/* ------------------------------------------------------- actions */}
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-end gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:-mx-8 lg:px-8">
+      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-end gap-3 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur lg:-mx-8 lg:px-8">
         <Button type="button" variant="ghost" onClick={() => router.back()} disabled={busy}>
           Cancel
         </Button>
@@ -396,7 +396,7 @@ function TaskRow({
   const rowErrors = errors.tasks?.[index];
 
   return (
-    <div className="rounded-lg bg-surface-muted/50 p-3 ring-1 ring-line">
+    <div className="rounded-lg bg-surface-muted/50 p-3 ring-1 ring-border">
       <div className="grid gap-3 lg:grid-cols-12">
         <Field
           className="lg:col-span-4"
@@ -449,7 +449,7 @@ function TaskRow({
 
         <div className="flex items-end lg:col-span-2">
           {onRemove && (
-            <Button type="button" variant="ghost" size="sm" onClick={onRemove} className="text-rose-500">
+            <Button type="button" variant="ghost" size="sm" onClick={onRemove} className="text-status-missing">
               <Trash2 className="size-3.5" /> Remove
             </Button>
           )}
@@ -502,12 +502,12 @@ function NoteSection({
         }
       />
       <CardBody className="space-y-3">
-        {fields.length === 0 && <p className="py-2 text-sm text-muted">{emptyLabel}</p>}
+        {fields.length === 0 && <p className="py-2 text-sm text-secondary">{emptyLabel}</p>}
 
         {fields.map((field, index) => {
           const rowError = Array.isArray(errors) ? errors[index] : undefined;
           return (
-            <div key={field.id} className="rounded-lg bg-surface-muted/50 p-3 ring-1 ring-line">
+            <div key={field.id} className="rounded-lg bg-surface-muted/50 p-3 ring-1 ring-border">
               <div className="flex flex-wrap items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <Input
@@ -516,29 +516,29 @@ function NoteSection({
                     {...register(`${name}.${index}.description`)}
                   />
                   {rowError && (
-                    <p className="mt-1 text-xs text-rose-500">
+                    <p className="mt-1 text-xs text-status-missing">
                       {(rowError as { description?: { message?: string } }).description?.message}
                     </p>
                   )}
                 </div>
 
-                <label className="flex items-center gap-2 text-xs text-foreground">
+                <label className="flex items-center gap-2 text-xs text-primary">
                   {/* A radio, not a checkbox: only one item can be the key one. */}
                   <input
                     type="radio"
                     name={`${name}-key`}
                     checked={watchKey(index)}
                     onChange={() => onSelectKey(index)}
-                    className="size-4 accent-[var(--brand)]"
+                    className="size-4 accent-[var(--color-brand)]"
                   />
                   Key item
                 </label>
 
                 {showResolved && (
-                  <label className="flex items-center gap-2 text-xs text-foreground">
+                  <label className="flex items-center gap-2 text-xs text-primary">
                     <input
                       type="checkbox"
-                      className="size-4 accent-[var(--brand)]"
+                      className="size-4 accent-[var(--color-brand)]"
                       {...register(`${name}.${index}.resolved`)}
                     />
                     Resolved
@@ -550,7 +550,7 @@ function NoteSection({
                   variant="ghost"
                   size="sm"
                   onClick={() => onRemove(index)}
-                  className="text-rose-500"
+                  className="text-status-missing"
                 >
                   <Trash2 className="size-3.5" />
                 </Button>

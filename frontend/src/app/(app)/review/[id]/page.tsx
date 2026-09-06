@@ -95,7 +95,7 @@ export default function ReviewReportPage() {
       <div className="mb-5">
         <Link
           href="/review"
-          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-sm text-secondary hover:text-primary"
         >
           <ArrowLeft className="size-4" /> Review queue
         </Link>
@@ -104,11 +104,11 @@ export default function ReviewReportPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-xl font-semibold text-foreground">{report.userName}</h1>
+            <h1 className="text-xl font-semibold text-primary">{report.userName}</h1>
             <StatusBadge state={report.status} />
             {report.currentVersion && <Badge>v{report.currentVersion.versionNo}</Badge>}
           </div>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-secondary">
             {weekRangeLabel(report.weekStart, report.weekEnd)}
             {report.projectName && ` · ${report.projectName}`}
             {report.submittedAt && ` · submitted ${dateTime(report.submittedAt)}`}
@@ -182,7 +182,7 @@ export default function ReviewReportPage() {
                     </Button>
                   </div>
 
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-secondary">
                     Requesting changes opens a fresh version for {report.userName.split(" ")[0]} to
                     edit. The version you are reading now is kept exactly as it is.
                   </p>

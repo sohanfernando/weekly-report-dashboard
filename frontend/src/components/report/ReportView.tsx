@@ -20,7 +20,7 @@ export function ReportView({ version }: { version: ReportVersion }) {
         />
         {version.tasks.length === 0 ? (
           <CardBody>
-            <p className="text-sm text-muted">No tasks recorded.</p>
+            <p className="text-sm text-secondary">No tasks recorded.</p>
           </CardBody>
         ) : (
           <Table>
@@ -38,27 +38,30 @@ export function ReportView({ version }: { version: ReportVersion }) {
             <tbody>
               {version.tasks.map((task, index) => (
                 <tr key={task.id ?? index}>
-                  <Td className="font-medium text-foreground">{task.name}</Td>
+                  <Td className="font-medium text-primary">{task.name}</Td>
                   <Td>
                     <PriorityPill priority={task.priority} />
                   </Td>
-                  <Td className="text-muted">{TASK_STATUS_LABEL[task.status]}</Td>
-                  <Td className="text-right tabular-nums text-muted">{task.plannedPct}%</Td>
+                  <Td className="text-secondary">{TASK_STATUS_LABEL[task.status]}</Td>
+                  <Td className="text-right tabular-nums text-secondary">{task.plannedPct}%</Td>
                   <Td className="text-right tabular-nums">
                     <span
                       className={cn(
+                        // On or above plan reads as approved-green; behind plan
+                        // borrows the correction amber, the same signal the
+                        // review workflow uses for "needs attention".
                         task.actualPct >= task.plannedPct
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-amber-600 dark:text-amber-400",
+                          ? "text-status-approved"
+                          : "text-status-correction",
                       )}
                     >
                       {task.actualPct}%
                     </span>
                   </Td>
-                  <Td className="text-right tabular-nums text-muted">
+                  <Td className="text-right tabular-nums text-secondary">
                     {hours(Number(task.hoursSpent))} / {hours(Number(task.hoursPlanned))}
                   </Td>
-                  <Td className="text-muted">{task.deliverable || "—"}</Td>
+                  <Td className="text-secondary">{task.deliverable || "—"}</Td>
                 </tr>
               ))}
             </tbody>
@@ -70,7 +73,7 @@ export function ReportView({ version }: { version: ReportVersion }) {
         <Card>
           <CardHeader title="Planned for next week" />
           <CardBody>
-            <p className="whitespace-pre-wrap text-sm text-foreground">{version.nextWeekPlan}</p>
+            <p className="whitespace-pre-wrap text-sm text-primary">{version.nextWeekPlan}</p>
           </CardBody>
         </Card>
       )}
@@ -82,7 +85,7 @@ export function ReportView({ version }: { version: ReportVersion }) {
           items={version.blockers}
           keyIcon={<AlertTriangle className="size-3.5" />}
           keyLabel="Key issue"
-          tone="amber"
+          tone="correction"
           showResolved
         />
         <NoteList
@@ -91,7 +94,7 @@ export function ReportView({ version }: { version: ReportVersion }) {
           items={version.achievements}
           keyIcon={<Star className="size-3.5" />}
           keyLabel="Key achievement"
-          tone="emerald"
+          tone="approved"
         />
       </div>
 
@@ -113,7 +116,7 @@ export function ReportView({ version }: { version: ReportVersion }) {
           <CardHeader title="Notes and links" />
           <CardBody className="space-y-3">
             {version.notes && (
-              <p className="whitespace-pre-wrap text-sm text-foreground">{version.notes}</p>
+              <p className="whitespace-pre-wrap text-sm text-primary">{version.notes}</p>
             )}
             {version.links && (
               <div className="space-y-1">
@@ -142,11 +145,13 @@ export function ReportView({ version }: { version: ReportVersion }) {
 }
 
 function PriorityPill({ priority }: { priority: string }) {
+  // Priority escalates through the system palette: neutral, informational,
+  // attention, urgent — the same four hues the status badges use.
   const styles: Record<string, string> = {
-    LOW: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-    MEDIUM: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
-    HIGH: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300",
-    CRITICAL: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
+    LOW: "bg-status-draft/10 text-status-draft",
+    MEDIUM: "bg-status-submitted/10 text-status-submitted",
+    HIGH: "bg-status-correction/10 text-status-correction",
+    CRITICAL: "bg-status-missing/10 text-status-missing",
   };
   return (
     <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", styles[priority])}>
@@ -169,13 +174,13 @@ function NoteList({
   items: { id: number | null; description: string; key: boolean; resolved: boolean }[];
   keyIcon: React.ReactNode;
   keyLabel: string;
-  tone: "amber" | "emerald";
+  tone: "correction" | "approved";
   showResolved?: boolean;
 }) {
   const toneClass =
-    tone === "amber"
-      ? "bg-amber-50 text-amber-900 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-900"
-      : "bg-emerald-50 text-emerald-900 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900";
+    tone === "correction"
+      ? "bg-status-correction/10 text-status-correction ring-status-correction/25"
+      : "bg-status-approved/10 text-status-approved ring-status-approved/25";
 
   // The key item first: it is the one thing the manager should read.
   const ordered = [...items].sort((a, b) => Number(b.key) - Number(a.key));
@@ -184,13 +189,13 @@ function NoteList({
     <Card>
       <CardHeader title={title} />
       <CardBody className="space-y-2">
-        {ordered.length === 0 && <p className="text-sm text-muted">{empty}</p>}
+        {ordered.length === 0 && <p className="text-sm text-secondary">{empty}</p>}
         {ordered.map((item, index) => (
           <div
             key={item.id ?? index}
             className={cn(
               "rounded-lg px-3 py-2 text-sm ring-1 ring-inset",
-              item.key ? toneClass : "bg-surface-muted/60 text-foreground ring-line",
+              item.key ? toneClass : "bg-surface-muted/60 text-primary ring-border",
             )}
           >
             <div className="flex items-start gap-2">
@@ -200,7 +205,7 @@ function NoteList({
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   {item.key && <span className="text-xs font-medium">{keyLabel}</span>}
                   {showResolved && item.resolved && (
-                    <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                    <span className="inline-flex items-center gap-1 text-xs text-status-approved">
                       <CheckCircle2 className="size-3" /> Resolved
                     </span>
                   )}
