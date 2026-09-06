@@ -42,16 +42,24 @@ const NAV: NavItem[] = [
   { href: "/settings", label: "Settings", icon: <Settings className="size-4" /> },
 ];
 
-/** Rail geometry in px, kept here so the tweens and the layout cannot drift apart. */
+/**
+ * Rail geometry in px, kept here so the tweens and the layout cannot drift apart.
+ *
+ * Centring in the 64px rail depends on what the row sits inside:
+ *
+ * - Nav links live inside a nav with its own px-3, so their box is 40px wide.
+ *   A 16px icon centres at (40 - 16) / 2 = 12 — which px-3 already gives. Their
+ *   padding is therefore not animated at all; an earlier version tweened it to
+ *   24, which exceeds the 40px box and pushed every icon off to the right.
+ * - The header row and footer rows span the full 64px, and hold a 32px control,
+ *   so they centre at (64 - 32) / 2 = 16 and do need the tween.
+ */
 const RAIL = {
   expanded: 256,
   collapsed: 64,
-  /** Horizontal padding that centres a 16px nav icon in the collapsed rail. */
-  navPadCollapsed: 24,
-  navPadExpanded: 12,
-  /** Same, for the 32px avatar and icon frame in the footer. */
-  footerPadCollapsed: 16,
-  footerPadExpanded: 12,
+  /** For full-width rows holding a 32px control: header toggle, footer avatar. */
+  widePadCollapsed: 16,
+  widePadExpanded: 12,
 } as const;
 
 /**
@@ -91,8 +99,8 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
       if (!aside) return;
 
       const labels = aside.querySelectorAll("[data-rail-label]");
-      const navRows = aside.querySelectorAll("[data-rail-row]");
-      const footerRows = aside.querySelectorAll("[data-rail-row-wide]");
+      // Only the full-width rows need their padding animated; see RAIL.
+      const wideRows = aside.querySelectorAll("[data-rail-row-wide]");
 
       // Scoped by media query rather than an innerWidth check: GSAP reverts a
       // context's inline styles when its query stops matching, so collapsing on
@@ -111,23 +119,17 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
             .set(labels, { display: "none" })
             .to(aside, { width: RAIL.collapsed }, "<")
             .to(
-              navRows,
-              { paddingLeft: RAIL.navPadCollapsed, paddingRight: RAIL.navPadCollapsed },
-              "<",
-            )
-            .to(
-              footerRows,
-              { paddingLeft: RAIL.footerPadCollapsed, paddingRight: RAIL.footerPadCollapsed },
+              wideRows,
+              { paddingLeft: RAIL.widePadCollapsed, paddingRight: RAIL.widePadCollapsed },
               "<",
             );
         } else {
           timeline
             .set(labels, { display: "" })
             .to(aside, { width: RAIL.expanded }, 0)
-            .to(navRows, { paddingLeft: RAIL.navPadExpanded, paddingRight: RAIL.navPadExpanded }, 0)
             .to(
-              footerRows,
-              { paddingLeft: RAIL.footerPadExpanded, paddingRight: RAIL.footerPadExpanded },
+              wideRows,
+              { paddingLeft: RAIL.widePadExpanded, paddingRight: RAIL.widePadExpanded },
               0,
             )
             // Labels fade in over the second half, once there is room for them.
@@ -142,13 +144,9 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
       media.add("(min-width: 1024px) and (prefers-reduced-motion: reduce)", () => {
         gsap.set(aside, { width: collapsed ? RAIL.collapsed : RAIL.expanded });
         gsap.set(labels, { opacity: collapsed ? 0 : 1, display: collapsed ? "none" : "" });
-        gsap.set(navRows, {
-          paddingLeft: collapsed ? RAIL.navPadCollapsed : RAIL.navPadExpanded,
-          paddingRight: collapsed ? RAIL.navPadCollapsed : RAIL.navPadExpanded,
-        });
-        gsap.set(footerRows, {
-          paddingLeft: collapsed ? RAIL.footerPadCollapsed : RAIL.footerPadExpanded,
-          paddingRight: collapsed ? RAIL.footerPadCollapsed : RAIL.footerPadExpanded,
+        gsap.set(wideRows, {
+          paddingLeft: collapsed ? RAIL.widePadCollapsed : RAIL.widePadExpanded,
+          paddingRight: collapsed ? RAIL.widePadCollapsed : RAIL.widePadExpanded,
         });
       });
     },
@@ -242,7 +240,10 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="flex h-14 shrink-0 items-center gap-2 overflow-hidden px-3">
+        <div
+          data-rail-row-wide
+          className="flex h-14 shrink-0 items-center gap-2 overflow-hidden px-3"
+        >
           <Link
             href="/"
             onClick={() => setMobileOpen(false)}
