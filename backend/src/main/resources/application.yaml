@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: weeklyreport
+
+  # Boot starts the MySQL container from compose.yaml on run.
+  # start-only => the container is NOT torn down when the app stops,
+  # so seeded data survives restarts during development.
+  docker:
+    compose:
+      enabled: true
+      lifecycle-management: start-only
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/weeklyreport?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:weeklyreport}
+    password: ${SPRING_DATASOURCE_PASSWORD:weeklyreport}
+
+  jpa:
+    # Flyway owns the schema. Hibernate only verifies the entities still
+    # match it, so entity/migration drift fails fast at startup.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  jwt:
+    # Override in every deployed environment. Must be >= 32 bytes for HS256.
+    secret: ${JWT_SECRET:dev-only-secret-change-me-in-production-0123456789}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:240}
+    cookie-name: wr_token
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  seed:
+    enabled: ${SEED_ENABLED:true}
+
+logging:
+  level:
+    org.springframework.security: INFO

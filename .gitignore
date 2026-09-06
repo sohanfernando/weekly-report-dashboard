@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Node (frontend)
+node_modules/
+.next/
+out/
+*.log
+
+# Java (backend)
+target/

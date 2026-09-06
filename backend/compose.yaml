@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: 'mysql:8.4'
+    container_name: weeklyreport-mysql
+    environment:
+      MYSQL_DATABASE: weeklyreport
+      MYSQL_USER: weeklyreport
+      MYSQL_PASSWORD: weeklyreport
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - '3306:3306'
+    volumes:
+      - weeklyreport-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ 'CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-uroot', '-proot' ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  weeklyreport-mysql-data:
