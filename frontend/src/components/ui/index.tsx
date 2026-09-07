@@ -455,9 +455,14 @@ export function Badge({
 // ----------------------------------------------------------------- table
 
 export function Table({ children, className }: { children: ReactNode; className?: string }) {
-  // Wide tables scroll inside their own container rather than pushing the page.
+  // Wide tables scroll sideways inside their own container rather than pushing
+  // the page. overflow-y is pinned to hidden on purpose: setting overflow-x
+  // alone promotes overflow-y from visible to auto, which turns this into a
+  // vertical scroll container as well and lets any transient overflow inside
+  // flash a scrollbar. The wrapper has no height constraint, so there is never
+  // real vertical content to clip.
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto overflow-y-hidden">
       <table className={cn("w-full min-w-[42rem] text-left text-sm", className)}>{children}</table>
     </div>
   );

@@ -58,10 +58,17 @@ export function Reveal({
       // untouched is right: a loading skeleton should not fade in and out.
       if (Array.isArray(targets) && targets.length === 0) return;
 
+      // Table rows fade without moving. A wrapper with overflow-x:auto has
+      // overflow-y computed to auto as well — the spec promotes it the moment
+      // either axis stops being visible — so translating rows down by 10px
+      // extends the scrollable area and flashes a vertical scrollbar for the
+      // length of the animation.
+      const rise = Tag === "tbody" ? 0 : RISE;
+
       withMotion(
         root,
         () => {
-          gsap.set(targets, { opacity: 0, y: RISE });
+          gsap.set(targets, { opacity: 0, y: rise });
           gsap.to(targets, {
             ...RESTING,
             duration: DURATION.quick,
