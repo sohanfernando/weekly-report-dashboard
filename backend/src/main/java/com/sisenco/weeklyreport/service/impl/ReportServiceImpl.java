@@ -6,6 +6,7 @@ import com.sisenco.weeklyreport.domain.ReportReview;
 import com.sisenco.weeklyreport.domain.ReportStatus;
 import com.sisenco.weeklyreport.domain.ReportVersion;
 import com.sisenco.weeklyreport.domain.ReviewAction;
+import com.sisenco.weeklyreport.domain.Role;
 import com.sisenco.weeklyreport.domain.TaskType;
 import com.sisenco.weeklyreport.domain.User;
 import com.sisenco.weeklyreport.domain.VersionAchievement;
@@ -79,6 +80,14 @@ public class ReportServiceImpl implements ReportService {
         }
 
         User owner = userRepository.findById(userId).orElseThrow(() -> NotFoundException.of("User", userId));
+
+        // Second layer, behind the controller's role check. Filing is a member
+        // capability: managers review reports rather than writing them, and the
+        // dashboard's compliance figures count members only, so a manager's
+        // report would sit outside every metric that measures the team.
+        if (owner.getRole() != Role.MEMBER) {
+            throw new ForbiddenException("Managers review reports rather than filing them");
+        }
 
         Report report = Report.builder()
                 .user(owner)

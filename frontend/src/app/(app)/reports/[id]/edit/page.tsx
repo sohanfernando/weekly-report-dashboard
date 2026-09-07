@@ -3,13 +3,14 @@
 import { ArrowLeft, MessageSquareWarning } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { MemberOnly } from "@/components/layout/MemberOnly";
 import { Reveal } from "@/components/motion/Reveal";
 import { ReportForm } from "@/components/report/ReportForm";
 import { Alert, Button, Card, EmptyState, Loading, PageHeader } from "@/components/ui";
 import { dateTime, weekRangeLabel } from "@/lib/format";
 import { useReport } from "@/lib/queries";
 
-export default function EditReportPage() {
+function EditReportPageContent() {
   const params = useParams<{ id: string }>();
   const reportId = Number(params.id);
   const { data: report, isPending, error } = useReport(reportId);
@@ -100,5 +101,17 @@ export default function EditReportPage() {
         <ReportForm report={report} />
       </Reveal>
     </>
+  );
+}
+
+/**
+ * Managers are redirected away: filing a report belongs to the team member, so
+ * this screen has nothing for them. The API refuses the writes regardless.
+ */
+export default function PageEditReportPage() {
+  return (
+    <MemberOnly>
+      <EditReportPageContent />
+    </MemberOnly>
   );
 }

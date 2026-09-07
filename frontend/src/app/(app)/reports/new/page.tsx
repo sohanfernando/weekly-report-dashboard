@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { MemberOnly } from "@/components/layout/MemberOnly";
 import { Reveal } from "@/components/motion/Reveal";
 import { ReportForm } from "@/components/report/ReportForm";
 import { Alert, Loading, PageHeader } from "@/components/ui";
@@ -45,10 +46,22 @@ function NewReportPage() {
   );
 }
 
-export default function Page() {
+function PageContent() {
   return (
     <Suspense fallback={<Loading />}>
       <NewReportPage />
     </Suspense>
+  );
+}
+
+/**
+ * Managers are redirected away: filing a report belongs to the team member, so
+ * this screen has nothing for them. The API refuses the writes regardless.
+ */
+export default function PagePage() {
+  return (
+    <MemberOnly>
+      <PageContent />
+    </MemberOnly>
   );
 }

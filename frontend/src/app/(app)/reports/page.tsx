@@ -3,6 +3,7 @@
 import { ClipboardList, Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { MemberOnly } from "@/components/layout/MemberOnly";
 import { Reveal } from "@/components/motion/Reveal";
 import {
   Button,
@@ -28,7 +29,7 @@ const STATUSES: ReportStatus[] = ["DRAFT", "SUBMITTED", "NEEDS_CORRECTION", "APP
  * Report history for the signed-in member — a list view, separate from the
  * create/edit page, as Section 7 asks.
  */
-export default function MyReportsPage() {
+function MyReportsPageContent() {
   const [filters, setFilters] = useState<ReportFilters>({ page: 0, size: 20 });
   const { data, isPending, isError } = useMyReports(filters);
   const { data: projects } = useProjects(false);
@@ -203,5 +204,17 @@ export default function MyReportsPage() {
         )}
       </Card>
     </>
+  );
+}
+
+/**
+ * Managers are redirected away: filing a report belongs to the team member, so
+ * this screen has nothing for them. The API refuses the writes regardless.
+ */
+export default function PageMyReportsPage() {
+  return (
+    <MemberOnly>
+      <MyReportsPageContent />
+    </MemberOnly>
   );
 }

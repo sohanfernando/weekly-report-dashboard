@@ -36,7 +36,8 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="size-4" />, roles: ["MANAGER"] },
   { href: "/review", label: "Review queue", icon: <ShieldCheck className="size-4" />, roles: ["MANAGER"] },
   { href: "/team", label: "Team", icon: <Users className="size-4" />, roles: ["MANAGER"] },
-  { href: "/reports", label: "My reports", icon: <ClipboardList className="size-4" /> },
+  // Filing a report is a member capability, so a manager has no "mine" to show.
+  { href: "/reports", label: "My reports", icon: <ClipboardList className="size-4" />, roles: ["MEMBER"] },
   { href: "/projects", label: "Projects", icon: <FolderKanban className="size-4" /> },
   { href: "/users", label: "User management", icon: <BarChart3 className="size-4" />, roles: ["MANAGER"] },
   { href: "/settings", label: "Settings", icon: <Settings className="size-4" /> },

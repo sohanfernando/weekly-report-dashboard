@@ -372,9 +372,14 @@ Failures come back as RFC 9457 problem documents:
 
 Two roles, matching the brief's "Team Member" and "Manager / Admin":
 
-- **MEMBER** — creates, edits and submits their own reports, and sees only those.
+- **MEMBER** — creates, edits and submits their own weekly reports, and sees
+  only those.
 - **MANAGER** — reviews every member's report, and manages users and projects.
-  Cannot edit anyone else's report content.
+  Cannot edit anyone else's report content, and **does not file reports** —
+  Section 1 gives creating, editing and submitting to the team member, and
+  reviewing to the manager. The dashboard's compliance figures count members
+  only, so a manager's own report would sit outside every metric that measures
+  the team.
 
 The brief allows role assignment "by an admin, or at signup", and this
 application does both: the registration form asks which role you are joining

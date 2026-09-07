@@ -39,6 +39,8 @@ import org.springframework.data.domain.Pageable;
  * <h2>Who may do what</h2>
  *
  * <ul>
+ *   <li>Only a member may file a report at all. Section 1 gives creating,
+ *       editing and submitting to the team member, and reviewing to the manager.
  *   <li>A member sees and edits only their own reports.
  *   <li>A manager sees every member's report <em>except</em> drafts, which the
  *       brief makes owner-only, and may change only status and comments — there
@@ -63,6 +65,8 @@ public interface ReportService {
      *     already has a report for that week
      * @throws com.sisenco.weeklyreport.exception.BadRequestException if
      *     {@code weekStart} is not a Monday
+     * @throws com.sisenco.weeklyreport.exception.ForbiddenException if the user
+     *     is not a MEMBER
      */
     ReportDetailResponse createDraft(Long userId, SaveReportRequest request);
 
