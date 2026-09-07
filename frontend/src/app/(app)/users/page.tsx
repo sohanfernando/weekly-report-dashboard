@@ -158,8 +158,13 @@ export default function UsersPage() {
                           className="h-8 text-xs"
                           value={user.role}
                           /* Changing your own role is refused by the API, so do
-                             not offer it and invite a 409. */
-                          disabled={isSelf || updateRole.isPending}
+                             not offer it and invite a 409. Only the row being
+                             changed locks — isPending alone would freeze every
+                             dropdown on the page. */
+                          disabled={
+                            isSelf ||
+                            (updateRole.isPending && updateRole.variables?.id === user.id)
+                          }
                           onChange={(event) => {
                             setError(null);
                             updateRole.mutate(
@@ -188,6 +193,9 @@ export default function UsersPage() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              loading={
+                                updateStatus.isPending && updateStatus.variables?.id === user.id
+                              }
                               onClick={() => {
                                 setError(null);
                                 updateStatus.mutate(
@@ -204,6 +212,7 @@ export default function UsersPage() {
                                 size="sm"
                                 className="text-status-missing"
                                 title="Remove from the team"
+                                loading={removeUser.isPending && removeUser.variables === user.id}
                                 onClick={() => {
                                   setError(null);
                                   removeUser.mutate(user.id, { onError: handleError });

@@ -167,7 +167,11 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
   const achievementValues = useWatch({ control, name: "achievements" });
   const weekEnd = weekStart ? format(addDays(parseISO(weekStart), 6), "yyyy-MM-dd") : null;
 
-  const busy = createReport.isPending || updateReport.isPending || submitReport.isPending;
+  // Which button was pressed, not merely whether something is in flight.
+  // Saving a draft and submitting share the same mutations, so an isPending
+  // flag alone cannot tell them apart and would spin both buttons at once.
+  const [pending, setPending] = useState<"draft" | "submit" | null>(null);
+  const busy = pending !== null;
 
   /** Exactly one blocker or achievement may be the key item, so selecting one clears the rest. */
   function selectKey(field: "blockers" | "achievements", index: number) {
@@ -196,12 +200,14 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
   }
 
   function handleApiError(error: unknown) {
+    setPending(null);
     setFormError(error instanceof ApiError ? error.message : "Could not save the report.");
   }
 
   const save = (thenSubmit: boolean) =>
     handleSubmit((values) => {
       setFormError(null);
+      setPending(thenSubmit ? "submit" : "draft");
       const payload = toPayload(values);
 
       const afterSave = (saved: ReportDetail) => {
@@ -392,10 +398,18 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
         <Button type="button" variant="ghost" onClick={() => router.back()} disabled={busy}>
           Cancel
         </Button>
-        <Button type="button" variant="secondary" onClick={save(false)} loading={busy}>
+        {/* Only the pressed button spins; both stay disabled so the other
+            action cannot be fired while one is in flight. */}
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={save(false)}
+          loading={pending === "draft"}
+          disabled={busy}
+        >
           Save draft
         </Button>
-        <Button type="button" onClick={save(true)} loading={busy}>
+        <Button type="button" onClick={save(true)} loading={pending === "submit"} disabled={busy}>
           {isEdit && report.status === "NEEDS_CORRECTION" ? "Resubmit for review" : "Submit for review"}
         </Button>
       </div>

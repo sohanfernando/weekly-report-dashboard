@@ -174,7 +174,10 @@ export default function ProjectsPage() {
                           <Button
                             variant="danger"
                             size="sm"
-                            loading={deleteProject.isPending}
+                            loading={
+                              deleteProject.isPending &&
+                              deleteProject.variables === project.id
+                            }
                             onClick={() => {
                               setError(null);
                               deleteProject.mutate(project.id, {

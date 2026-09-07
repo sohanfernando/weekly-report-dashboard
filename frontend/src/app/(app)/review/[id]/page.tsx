@@ -39,6 +39,10 @@ export default function ReviewReportPage() {
   const { data: report, isPending, error } = useReport(reportId);
   const review = useReviewReport();
 
+  // Approve and Request changes are the same mutation, so isPending alone
+  // would spin both. The variables of the in-flight call say which one it is.
+  const inFlight = review.isPending ? review.variables?.action : undefined;
+
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -170,13 +174,18 @@ export default function ReviewReportPage() {
                   </Field>
 
                   <div className="flex flex-col gap-2">
-                    <Button onClick={() => act("APPROVE")} loading={review.isPending}>
+                    <Button
+                      onClick={() => act("APPROVE")}
+                      loading={inFlight === "APPROVE"}
+                      disabled={review.isPending}
+                    >
                       <CheckCircle2 className="size-4" /> Approve
                     </Button>
                     <Button
                       variant="secondary"
                       onClick={() => act("REQUEST_CHANGES")}
-                      loading={review.isPending}
+                      loading={inFlight === "REQUEST_CHANGES"}
+                      disabled={review.isPending}
                     >
                       <MessageSquareWarning className="size-4" /> Request changes
                     </Button>
