@@ -24,11 +24,11 @@ import java.util.List;
 public record SaveReportRequest(
         @NotNull(message = "Week start is required") LocalDate weekStart,
         Long projectId,
-        @Valid @Size(max = 50, message = "A weekly report cannot hold more than 50 tasks")
-                List<TaskRequest> tasks,
+        @Size(max = 50, message = "A weekly report cannot hold more than 50 tasks")
+                List<@Valid TaskRequest> tasks,
         @Size(max = 2000) String nextWeekPlan,
-        @Valid @Size(max = 30) List<BlockerRequest> blockers,
-        @Valid @Size(max = 30) List<AchievementRequest> achievements,
-        @Valid @Size(max = 10) List<HoursRequest> hours,
+        @Size(max = 30) List<@Valid BlockerRequest> blockers,
+        @Size(max = 30) List<@Valid AchievementRequest> achievements,
+        @Size(max = 10) List<@Valid HoursRequest> hours,
         @Size(max = 2000) String notes,
         @Size(max = 2000) String links) {}

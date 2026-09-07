@@ -176,12 +176,28 @@ cd backend
 ./mvnw test
 ```
 
-Integration tests bring up a throwaway MySQL with Testcontainers, so Docker
-must be running.
+Fifteen tests, all green. They bring up a throwaway MySQL with Testcontainers,
+so Docker must be running.
 
-There are also three PowerShell smoke scripts that exercise the running API
-end to end. They are development aids rather than a substitute for the test
-suite, but they cover the workflow in more depth than a unit test can:
+Fourteen of them are `RoleBasedAccessControlTest`, which drives the real HTTP
+stack through MockMvc and authenticates the way a browser does — logging in and
+replaying the httpOnly session cookie. Nothing stubs the security context, so a
+missing annotation or a misconfigured filter chain fails the test rather than
+being hidden by `@WithMockUser`. It covers:
+
+- anonymous requests, including a forged cookie, are refused
+- a member cannot reach any manager-only endpoint, review a report, or write a
+  project
+- a member cannot read, edit or submit another member's report, and sees only
+  their own history
+- a manager cannot file a report or rewrite a member's content
+- a manager cannot open a draft, but can read the same report once submitted
+- requesting changes opens a second version rather than overwriting the first
+- a manager cannot change their own role
+
+There are also three PowerShell smoke scripts that exercise a running API end
+to end. They are development aids rather than a substitute for the suite above,
+but they cover the workflow in more depth:
 
 ```powershell
 cd backend

@@ -249,7 +249,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
             href="/"
             onClick={() => setMobileOpen(false)}
             data-rail-label
-            className="min-w-0 flex-1 truncate whitespace-nowrap text-sm font-semibold text-primary"
+            className="min-w-0 flex-1 truncate whitespace-nowrap text-lg font-bold text-[#4f46e5]"
           >
             Weekly Reports
           </Link>
