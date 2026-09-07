@@ -43,7 +43,13 @@ public class Project extends AuditedEntity {
     @Column(nullable = false)
     private boolean active;
 
-    /** Optional per the brief: which team members work on this project. */
+    /**
+     * Which team members work on this project. Optional per the brief.
+     *
+     * <p>An empty set means the project is open to everyone, not that it is
+     * closed to everyone — otherwise a project would be unusable between being
+     * created and having someone assigned to it.
+     */
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "project_members",
@@ -51,4 +57,14 @@ public class Project extends AuditedEntity {
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     @Builder.Default
     private Set<User> members = new LinkedHashSet<>();
+
+    /**
+     * Whether {@code userId} may tag a report against this project.
+     *
+     * <p>Only meaningful for members; a manager sees every project. Call inside
+     * a transaction — the membership set is lazy.
+     */
+    public boolean isAvailableTo(Long userId) {
+        return members.isEmpty() || members.stream().anyMatch(member -> member.getId().equals(userId));
+    }
 }

@@ -149,6 +149,19 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
 
   // useWatch rather than form.watch(): it subscribes to just these fields and,
   // unlike watch(), returns a value the React Compiler can reason about.
+  // The picker only offers projects this member may use. A report can still
+  // reference one they have since been unassigned from, so that project is kept
+  // in the list — otherwise an unrelated edit would silently clear the tag.
+  const available = projects ?? [];
+  const orphanedCurrent =
+    report?.projectId && !available.some((project) => project.id === report.projectId)
+      ? [{ id: report.projectId, name: report.projectName ?? "Current project" }]
+      : [];
+  const projectOptions = [
+    ...orphanedCurrent,
+    ...available.map((project) => ({ id: project.id, name: project.name })),
+  ];
+
   const weekStart = useWatch({ control, name: "weekStart" });
   const blockerValues = useWatch({ control, name: "blockers" });
   const achievementValues = useWatch({ control, name: "achievements" });
@@ -249,7 +262,7 @@ export function ReportForm({ report, defaultWeek }: { report?: ReportDetail; def
           <Field label="Project or category" htmlFor="projectId" error={errors.projectId?.message}>
             <Select id="projectId" {...register("projectId")}>
               <option value="">No project</option>
-              {projects?.map((project) => (
+              {projectOptions.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
                 </option>

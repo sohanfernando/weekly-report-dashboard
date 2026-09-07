@@ -1,6 +1,7 @@
 package com.sisenco.weeklyreport.service.impl;
 
 import com.sisenco.weeklyreport.domain.Project;
+import com.sisenco.weeklyreport.domain.Role;
 import com.sisenco.weeklyreport.domain.User;
 import com.sisenco.weeklyreport.dto.request.AssignProjectMembersRequest;
 import com.sisenco.weeklyreport.dto.request.CreateProjectRequest;
@@ -30,13 +31,18 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProjectResponse> list(boolean activeOnly) {
-        // Fetch-join variants: summary() reads the membership count, and a lazy
-        // collection would turn that into one query per project.
+    public List<ProjectResponse> list(boolean activeOnly, Long viewerId, Role viewerRole) {
+        // Fetch-join variants: the visibility rule and summary()'s member count
+        // both read the membership, and a lazy collection would turn that into
+        // one query per project.
         List<Project> projects = activeOnly
                 ? projectRepository.findActiveWithMembers()
                 : projectRepository.findAllWithMembers();
-        return projects.stream().map(ProjectResponse::summary).toList();
+
+        return projects.stream()
+                .filter(project -> viewerRole != Role.MEMBER || project.isAvailableTo(viewerId))
+                .map(ProjectResponse::summary)
+                .toList();
     }
 
     @Override

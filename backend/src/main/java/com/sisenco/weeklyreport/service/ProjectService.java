@@ -4,6 +4,7 @@ import com.sisenco.weeklyreport.dto.request.AssignProjectMembersRequest;
 import com.sisenco.weeklyreport.dto.request.CreateProjectRequest;
 import com.sisenco.weeklyreport.dto.request.UpdateProjectRequest;
 import com.sisenco.weeklyreport.dto.response.ProjectResponse;
+import com.sisenco.weeklyreport.domain.Role;
 import java.util.List;
 
 /**
@@ -17,8 +18,16 @@ import java.util.List;
  */
 public interface ProjectService {
 
-    /** @param activeOnly true to hide archived projects, as the report form does */
-    List<ProjectResponse> list(boolean activeOnly);
+    /**
+     * Projects the caller may see.
+     *
+     * <p>A manager sees all of them. A member sees the ones they are assigned to,
+     * plus any with nobody assigned at all — an empty membership means open to
+     * everyone rather than closed to everyone.
+     *
+     * @param activeOnly true to hide archived projects, as the report form does
+     */
+    List<ProjectResponse> list(boolean activeOnly, Long viewerId, Role viewerRole);
 
     ProjectResponse get(Long projectId);
 

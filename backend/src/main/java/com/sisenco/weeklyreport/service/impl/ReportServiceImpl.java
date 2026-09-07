@@ -91,7 +91,7 @@ public class ReportServiceImpl implements ReportService {
 
         Report report = Report.builder()
                 .user(owner)
-                .project(resolveProject(request.projectId()))
+                .project(resolveProject(request.projectId(), owner, null))
                 .weekStart(weekStart)
                 .weekEnd(weekStart.plusDays(6))
                 .status(ReportStatus.DRAFT)
@@ -136,7 +136,7 @@ public class ReportServiceImpl implements ReportService {
             throw new BadRequestException("The week of a report cannot be changed once it has been created");
         }
 
-        report.setProject(resolveProject(request.projectId()));
+        report.setProject(resolveProject(request.projectId(), report.getUser(), report));
         applyContent(version, request);
 
         return ReportDetailResponse.from(reportRepository.save(report), true);
@@ -466,13 +466,35 @@ public class ReportServiceImpl implements ReportService {
         return report.isOwnedBy(caller.getId()) && report.getStatus().isEditableByOwner();
     }
 
-    private Project resolveProject(Long projectId) {
+    /**
+     * Resolves the project a report is tagged against, and checks the author may
+     * use it.
+     *
+     * <p>The picker only offers projects a member is assigned to, but the API
+     * has to hold the same line — the list a client renders is not a constraint
+     * on what it can post.
+     *
+     * @param existing the report being edited, or null when creating. A project
+     *     already on a report stays selectable even if the author has since been
+     *     unassigned from it, so an unrelated edit cannot be blocked by a
+     *     membership change made after the fact.
+     */
+    private Project resolveProject(Long projectId, User author, Report existing) {
         if (projectId == null) {
             return null;
         }
-        return projectRepository
+        Project project = projectRepository
                 .findById(projectId)
                 .orElseThrow(() -> NotFoundException.of("Project", projectId));
+
+        boolean alreadyOnThisReport = existing != null
+                && existing.getProject() != null
+                && existing.getProject().getId().equals(projectId);
+
+        if (author.getRole() == Role.MEMBER && !alreadyOnThisReport && !project.isAvailableTo(author.getId())) {
+            throw new ForbiddenException("You are not assigned to that project");
+        }
+        return project;
     }
 
     private LocalDate requireMonday(LocalDate weekStart) {

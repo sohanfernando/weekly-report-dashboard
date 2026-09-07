@@ -362,9 +362,16 @@ means the last eight weeks. Any day of a week is snapped to its Monday.
 | `PATCH` | `/users/{id}/role`, `/users/{id}/status` | manager |
 | `DELETE` | `/users/{id}` | manager |
 
-Assigning members to a project is optional. A project with nobody assigned is
-available to everyone; the assignment is a hint about who works on what, not a
-permission boundary — reports are never restricted by project membership.
+Assigning members to a project scopes who can tag a report against it. A
+project with **nobody** assigned stays open to everyone — an empty membership
+means unrestricted rather than closed, so a newly created project is usable
+before anyone is assigned to it. Once it has members, only those members see it
+in the report form, and the API refuses a report tagged against it by anyone
+else. Managers always see every project.
+
+One exception, so an edit cannot be trapped: a project already saved on a
+report stays selectable for that report even if its author has since been
+unassigned.
 
 Deleting a user deactivates them rather than dropping the row, so their report
 history survives. Deleting a project is refused once any report references it;

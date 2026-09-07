@@ -4,12 +4,14 @@ import com.sisenco.weeklyreport.dto.request.AssignProjectMembersRequest;
 import com.sisenco.weeklyreport.dto.request.CreateProjectRequest;
 import com.sisenco.weeklyreport.dto.request.UpdateProjectRequest;
 import com.sisenco.weeklyreport.dto.response.ProjectResponse;
+import com.sisenco.weeklyreport.security.AppUserPrincipal;
 import com.sisenco.weeklyreport.service.ProjectService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,10 +37,17 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
-    /** @param activeOnly defaults true, which is what the report form wants */
+    /**
+     * Projects the caller may use. A member sees the ones they are assigned to
+     * plus any with nobody assigned; a manager sees all of them.
+     *
+     * @param activeOnly defaults true, which is what the report form wants
+     */
     @GetMapping
-    public List<ProjectResponse> list(@RequestParam(defaultValue = "true") boolean activeOnly) {
-        return projectService.list(activeOnly);
+    public List<ProjectResponse> list(
+            @RequestParam(defaultValue = "true") boolean activeOnly,
+            @AuthenticationPrincipal AppUserPrincipal principal) {
+        return projectService.list(activeOnly, principal.getId(), principal.getRole());
     }
 
     @GetMapping("/{projectId}")
