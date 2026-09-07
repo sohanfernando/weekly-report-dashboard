@@ -219,6 +219,15 @@ weekly-report-dashboard/
         └── lib/          API client, query hooks, shared types
 ```
 
+### Entity relationship diagram
+
+![ER diagram](docs/er-diagram.png)
+
+Rendered by `docs/er-diagram.py`, which draws the boxes and routes the
+connectors by hand from the schema in `V1__init.sql`. It is not generated from
+a live database, so **a schema change means editing both** — the migration and
+that script.
+
 ### Report versioning
 
 A report is not one mutable row. `reports` holds ownership, the week and the
