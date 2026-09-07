@@ -18,10 +18,8 @@ import com.sisenco.weeklyreport.dto.response.UserResponse;
 public interface AuthService {
 
     /**
-     * Creates a new account.
-     *
-     * <p>The new user is always a MEMBER; promotion is a separate admin action,
-     * so nobody can grant themselves access to the whole team at signup.
+     * Creates a new account in the role the request asks for, defaulting to
+     * MEMBER when none is given.
      *
      * @throws com.sisenco.weeklyreport.exception.ConflictException if the email is taken
      */

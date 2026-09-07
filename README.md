@@ -376,10 +376,19 @@ Two roles, matching the brief's "Team Member" and "Manager / Admin":
 - **MANAGER** — reviews every member's report, and manages users and projects.
   Cannot edit anyone else's report content.
 
-Registration always produces a MEMBER; only a manager can grant the MANAGER
-role. To break the resulting chicken-and-egg, the application creates a
-bootstrap manager at startup — but only when no active manager exists, so it
-cannot be used to regain access to a running system.
+The brief allows role assignment "by an admin, or at signup", and this
+application does both: the registration form asks which role you are joining
+as, and a manager can change anyone's role afterwards.
+
+That choice has a consequence worth stating plainly: **anyone who can reach the
+signup page can select MANAGER and read every team member's reports.** That is
+fine for an internal tool behind a company network, and fine for this
+assignment, but a public deployment would want an invite code or an approval
+step in front of it. Omitting the field from the request defaults to MEMBER,
+the narrower of the two.
+
+A bootstrap manager is still created at startup when no active manager exists,
+so a fresh database is administrable before anyone has registered.
 
 ---
 

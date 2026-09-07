@@ -265,6 +265,110 @@ export function PasswordInput({
   );
 }
 
+/**
+ * A segmented radio group: real radios, with a single indicator that slides to
+ * whichever one is selected.
+ *
+ * Native `<input type="radio">` under the hood rather than buttons and state,
+ * so arrow-key navigation, form association and screen-reader semantics all
+ * come for free. The inputs are visually hidden but focusable, and the focus
+ * ring is drawn on the label via `peer-focus-visible`.
+ *
+ * `registration` takes the object react-hook-form's `register()` returns and
+ * spreads it onto every input — which is exactly how native radios are meant
+ * to be wired: same name, different values.
+ */
+export function SegmentedRadio<T extends string>({
+  options,
+  value,
+  registration,
+  className,
+}: {
+  options: { value: T; label: string; description?: string }[];
+  value: T;
+  registration?: ComponentProps<"input">;
+  className?: string;
+}) {
+  const indicator = useRef<HTMLSpanElement>(null);
+  const index = Math.max(
+    0,
+    options.findIndex((option) => option.value === value),
+  );
+
+  // The indicator is exactly one slot wide, so moving it by 100% of its own
+  // width lands it precisely on the next option however many there are.
+  useGSAP(
+    () => {
+      const node = indicator.current;
+      if (!node) return;
+      withMotion(
+        node,
+        () => {
+          gsap.to(node, { xPercent: index * 100, duration: DURATION.quick, ease: EASE.out });
+        },
+        () => gsap.set(node, { xPercent: index * 100 }),
+      );
+    },
+    { dependencies: [index] },
+  );
+
+  return (
+    <div
+      className={cn("relative rounded-lg border border-border bg-surface-muted p-1", className)}
+    >
+      <span
+        ref={indicator}
+        aria-hidden
+        className="pointer-events-none absolute inset-y-1 left-1 rounded-md border border-border bg-surface shadow-sm"
+        style={{ width: `calc((100% - 0.5rem) / ${options.length})` }}
+      />
+
+      <div
+        className="relative grid gap-0"
+        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      >
+        {options.map((option) => {
+          const selected = option.value === value;
+          return (
+            <label
+              key={option.value}
+              className="group relative cursor-pointer rounded-md px-3 py-2 text-center"
+            >
+              <input
+                {...registration}
+                type="radio"
+                value={option.value}
+                defaultChecked={selected}
+                className="peer sr-only"
+              />
+              <span
+                className={cn(
+                  "block text-sm font-medium transition-colors",
+                  selected ? "text-brand" : "text-secondary group-hover:text-primary",
+                )}
+              >
+                {option.label}
+              </span>
+              {option.description && (
+                <span
+                  className={cn(
+                    "mt-0.5 block text-xs transition-colors",
+                    selected ? "text-primary" : "text-secondary",
+                  )}
+                >
+                  {option.description}
+                </span>
+              )}
+              {/* Focus ring drawn here, since the input itself is sr-only. */}
+              <span className="pointer-events-none absolute inset-0 rounded-md ring-brand peer-focus-visible:ring-2" />
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /** Wraps a control with its label and validation message. */
 export function Field({
   label,

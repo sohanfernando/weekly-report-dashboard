@@ -90,8 +90,13 @@ export function useLogin() {
 
 export function useRegister() {
   return useMutation({
-    mutationFn: (body: { name: string; email: string; password: string; jobTitle?: string }) =>
-      api.post<User>("/auth/register", body),
+    mutationFn: (body: {
+      name: string;
+      email: string;
+      password: string;
+      jobTitle?: string;
+      role: Role;
+    }) => api.post<User>("/auth/register", body),
   });
 }
 
