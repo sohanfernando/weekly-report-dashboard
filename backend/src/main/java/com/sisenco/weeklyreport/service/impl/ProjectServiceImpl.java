@@ -31,9 +31,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional(readOnly = true)
     public List<ProjectResponse> list(boolean activeOnly) {
+        // Fetch-join variants: summary() reads the membership count, and a lazy
+        // collection would turn that into one query per project.
         List<Project> projects = activeOnly
-                ? projectRepository.findByActiveTrueOrderByNameAsc()
-                : projectRepository.findAll();
+                ? projectRepository.findActiveWithMembers()
+                : projectRepository.findAllWithMembers();
         return projects.stream().map(ProjectResponse::summary).toList();
     }
 

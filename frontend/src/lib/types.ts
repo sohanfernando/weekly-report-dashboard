@@ -74,6 +74,8 @@ export interface Project {
   active: boolean;
   /** Null in list responses, where the join would be wasted work. */
   members: User[] | null;
+  /** Always present, so a list can show membership without the objects. */
+  memberCount: number;
   createdAt: string;
 }
 

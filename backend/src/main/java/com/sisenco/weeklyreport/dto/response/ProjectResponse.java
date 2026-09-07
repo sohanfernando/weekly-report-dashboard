@@ -11,10 +11,19 @@ public record ProjectResponse(
         String description,
         String color,
         boolean active,
+        /** Null in list responses, where the full objects would be wasted work. */
         List<UserResponse> members,
+        /** Always populated, so the list view can show membership without the objects. */
+        int memberCount,
         Instant createdAt) {
 
-    /** Without members, for list views where the join would be wasted work. */
+    /**
+     * Without the member objects, for list views.
+     *
+     * <p>Only safe to call on a project whose membership is loaded — the count
+     * touches the collection. The repository's fetch-join queries are what
+     * guarantee that.
+     */
     public static ProjectResponse summary(Project project) {
         return new ProjectResponse(
                 project.getId(),
@@ -24,6 +33,7 @@ public record ProjectResponse(
                 project.getColor(),
                 project.isActive(),
                 null,
+                project.getMembers().size(),
                 project.getCreatedAt());
     }
 
@@ -37,6 +47,7 @@ public record ProjectResponse(
                 project.getColor(),
                 project.isActive(),
                 project.getMembers().stream().map(UserResponse::from).toList(),
+                project.getMembers().size(),
                 project.getCreatedAt());
     }
 }

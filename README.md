@@ -346,6 +346,10 @@ means the last eight weeks. Any day of a week is snapped to its Monday.
 | `PATCH` | `/users/{id}/role`, `/users/{id}/status` | manager |
 | `DELETE` | `/users/{id}` | manager |
 
+Assigning members to a project is optional. A project with nobody assigned is
+available to everyone; the assignment is a hint about who works on what, not a
+permission boundary — reports are never restricted by project membership.
+
 Deleting a user deactivates them rather than dropping the row, so their report
 history survives. Deleting a project is refused once any report references it;
 archive it instead.

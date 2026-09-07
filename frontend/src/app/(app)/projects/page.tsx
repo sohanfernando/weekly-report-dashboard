@@ -24,10 +24,13 @@ import {
 import { ApiError } from "@/lib/api";
 import { CHART_SERIES, shortDate } from "@/lib/format";
 import {
+  useAssignProjectMembers,
   useDeleteProject,
   useMe,
+  useProject,
   useProjects,
   useSaveProject,
+  useUsers,
 } from "@/lib/queries";
 import type { Project } from "@/lib/types";
 
@@ -44,6 +47,7 @@ export default function ProjectsPage() {
 
   const { data: projects, isPending } = useProjects(false);
   const saveProject = useSaveProject();
+  const assignMembers = useAssignProjectMembers();
   const deleteProject = useDeleteProject();
 
   const [editing, setEditing] = useState<Project | "new" | null>(null);
@@ -89,18 +93,24 @@ export default function ProjectsPage() {
             <ProjectEditor
               key={editorTarget === "new" ? "new" : editorTarget.id}
               project={editorTarget === "new" ? undefined : editorTarget}
-              saving={saveProject.isPending}
+              saving={saveProject.isPending || assignMembers.isPending}
               onCancel={() => setEditing(null)}
-              onSave={(values) => {
+              onSave={(values, memberIds) => {
                 setError(null);
+                const fail = (err: unknown) =>
+                  setError(err instanceof ApiError ? err.message : "Could not save the project.");
+
+                // Membership is a separate endpoint, and a new project has no id
+                // until it exists — so it is assigned after the save returns.
                 saveProject.mutate(
                   { ...values, id: editorTarget === "new" ? undefined : editorTarget.id },
                   {
-                    onSuccess: () => setEditing(null),
-                    onError: (err) =>
-                      setError(
-                        err instanceof ApiError ? err.message : "Could not save the project.",
+                    onSuccess: (saved) =>
+                      assignMembers.mutate(
+                        { id: saved.id, userIds: memberIds },
+                        { onSuccess: () => setEditing(null), onError: fail },
                       ),
+                    onError: fail,
                   },
                 );
               }}
@@ -119,6 +129,7 @@ export default function ProjectsPage() {
                 <Th>Project</Th>
                 <Th>Code</Th>
                 <Th>Description</Th>
+                <Th>Members</Th>
                 <Th>Status</Th>
                 <Th>Created</Th>
                 {isManager && <Th />}
@@ -140,6 +151,11 @@ export default function ProjectsPage() {
                     <Badge>{project.code}</Badge>
                   </Td>
                   <Td className="max-w-md truncate text-secondary">{project.description ?? "—"}</Td>
+                  <Td className="text-secondary tabular-nums">
+                    {project.memberCount > 0
+                      ? `${project.memberCount} assigned`
+                      : "Anyone"}
+                  </Td>
                   <Td>
                     <span
                       className={
@@ -233,13 +249,16 @@ function ProjectEditor({
 }: {
   project?: Project;
   saving: boolean;
-  onSave: (values: {
-    name: string;
-    code: string;
-    description: string | null;
-    color: string | null;
-    active: boolean;
-  }) => void;
+  onSave: (
+    values: {
+      name: string;
+      code: string;
+      description: string | null;
+      color: string | null;
+      active: boolean;
+    },
+    memberIds: number[],
+  ) => void;
   onCancel: () => void;
 }) {
   const [name, setName] = useState(project?.name ?? "");
@@ -248,6 +267,21 @@ function ProjectEditor({
   const [color, setColor] = useState(project?.color ?? DEFAULT_COLORS[0]);
   const [active, setActive] = useState(project?.active ?? true);
   const [touched, setTouched] = useState(false);
+
+  // The list response carries only a count, so the current membership is read
+  // from the detail endpoint when an existing project is opened.
+  const detail = useProject(project?.id ?? Number.NaN);
+  const { data: staff } = useUsers({ active: true, size: 100 });
+
+  const [memberIds, setMemberIds] = useState<number[] | null>(null);
+  const loadedIds = detail.data?.members?.map((m) => m.id) ?? [];
+  // Null until the user touches it, so the loaded set shows through first.
+  const selected = memberIds ?? loadedIds;
+
+  const toggleMember = (id: number) =>
+    setMemberIds(
+      selected.includes(id) ? selected.filter((m) => m !== id) : [...selected, id],
+    );
 
   const nameError = touched && !name.trim() ? "Name is required" : undefined;
   const codeError = touched && !code.trim() ? "Code is required" : undefined;
@@ -313,6 +347,35 @@ function ProjectEditor({
           </div>
         </Field>
 
+        <Field
+          label="Team members"
+          hint="Optional. Leave empty to keep the project available to everyone."
+        >
+          <div className="max-h-44 overflow-y-auto rounded-lg border border-border">
+            {!staff || staff.content.length === 0 ? (
+              <p className="px-3 py-2 text-sm text-secondary">No active users.</p>
+            ) : (
+              staff.content.map((person) => (
+                <label
+                  key={person.id}
+                  className="flex cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 text-sm last:border-b-0 hover:bg-surface-muted"
+                >
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-[var(--color-brand)]"
+                    checked={selected.includes(person.id)}
+                    onChange={() => toggleMember(person.id)}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-primary">{person.name}</span>
+                  <span className="shrink-0 text-xs text-secondary">
+                    {person.jobTitle ?? (person.role === "MANAGER" ? "Manager" : "Member")}
+                  </span>
+                </label>
+              ))
+            )}
+          </div>
+        </Field>
+
         {project && (
           <label className="flex items-center gap-2 text-sm text-primary">
             <input
@@ -334,13 +397,16 @@ function ProjectEditor({
             onClick={() => {
               setTouched(true);
               if (!name.trim() || !code.trim()) return;
-              onSave({
-                name: name.trim(),
-                code: code.trim(),
-                description: description.trim() || null,
-                color,
-                active,
-              });
+              onSave(
+                {
+                  name: name.trim(),
+                  code: code.trim(),
+                  description: description.trim() || null,
+                  color,
+                  active,
+                },
+                selected,
+              );
             }}
           >
             {project ? "Save changes" : "Create project"}
