@@ -53,13 +53,18 @@ export default function AuthLayout({ children }: Readonly<{ children: ReactNode 
         </div>
 
         {/*
-          The illustration takes whatever height is left and sits on the bottom
-          edge, so the cropped desk continues off the panel instead of stopping
-          at one. object-contain leaves room at the sides on a wide panel,
-          which is invisible here: the image ground and the panel are the same
-          white.
+          Sized to the panel's full width, with its own aspect ratio choosing
+          the height — not `fill` with object-contain, which fits the image
+          inside the box and leaves a margin down both sides whenever the box
+          is proportionally taller than the picture.
+
+          mt-auto pushes it to the bottom when there is room to spare, and
+          collapses to nothing when there is not, so on a short viewport the
+          image overflows the bottom of the panel and is clipped there by the
+          aside. The desk is already drawn running off that edge, so the crop
+          reads as part of the picture.
         */}
-        <div className="relative mt-8 min-h-0 flex-1">
+        <div className="mt-auto pt-8">
           <Image
             src={illustration}
             alt=""
@@ -70,9 +75,8 @@ export default function AuthLayout({ children }: Readonly<{ children: ReactNode 
             // Statically imported, so the intrinsic size is known at build
             // time and this cannot shift layout while it loads.
             placeholder="blur"
-            fill
             sizes="(min-width: 1024px) 50vw, 1px"
-            className="object-contain object-bottom"
+            className="h-auto w-full"
           />
         </div>
       </aside>
