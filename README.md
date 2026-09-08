@@ -140,6 +140,10 @@ Everything in `application.yaml` can be overridden by environment variable.
 | `SEED_ENABLED` | `true` | Set `false` to skip the demo dataset |
 | `BOOTSTRAP_MANAGER_EMAIL` | `manager@sisenco.local` | First manager account |
 | `BOOTSTRAP_MANAGER_PASSWORD` | `Manager@12345` | **Change when deploying** |
+| `GROQ_API_KEY` | _(blank)_ | Enables the AI assistant. Blank switches it off |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` | Any tool-calling model on the endpoint |
+| `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` | Any OpenAI-compatible endpoint |
+| `AI_ENABLED` | `true` | Set `false` to switch the assistant off with a key present |
 
 ---
 
@@ -176,10 +180,10 @@ cd backend
 ./mvnw test
 ```
 
-Fifteen tests, all green. They bring up a throwaway MySQL with Testcontainers,
+Eighteen tests, all green. They bring up a throwaway MySQL with Testcontainers,
 so Docker must be running.
 
-Fourteen of them are `RoleBasedAccessControlTest`, which drives the real HTTP
+Seventeen of them are `RoleBasedAccessControlTest`, which drives the real HTTP
 stack through MockMvc and authenticates the way a browser does — logging in and
 replaying the httpOnly session cookie. Nothing stubs the security context, so a
 missing annotation or a misconfigured filter chain fails the test rather than
@@ -194,8 +198,13 @@ being hidden by `@WithMockUser`. It covers:
 - a manager cannot open a draft, but can read the same report once submitted
 - requesting changes opens a second version rather than overwriting the first
 - a manager cannot change their own role
+- a member cannot reach the AI assistant, which is manager-only
+- with no API key the assistant answers 503 rather than failing at startup
 
-There are also three PowerShell smoke scripts that exercise a running API end
+The assistant's key is pinned empty for the suite, so a developer who has
+`GROQ_API_KEY` exported does not turn the tests into live calls to a paid API.
+
+There are also four PowerShell smoke scripts that exercise a running API end
 to end. They are development aids rather than a substitute for the suite above,
 but they cover the workflow in more depth:
 
@@ -204,7 +213,12 @@ cd backend
 .\scripts\smoke-auth.ps1          # 12 checks  - sessions and login rules
 .\scripts\smoke-workflow.ps1      # 48 checks  - the full review cycle
 .\scripts\smoke-dashboard.ps1     # 40 checks  - metrics, charts, access control
+.\scripts\smoke-chat.ps1          # 14 checks  - the assistant, grounded against real figures
 ```
+
+`smoke-chat.ps1` asserts on which tools ran and which real figures appear in the
+answer, never on wording — a model writes different prose every run. Without a
+key it checks the access rules and the 503, then skips the rest.
 
 A Postman collection for the auth endpoints is in
 `backend/postman/`.
@@ -299,6 +313,57 @@ rewrite. Deploying the frontend on a genuinely different site would need
 
 ---
 
+### The AI assistant
+
+Section 8, marked "good to have". Manager-only, and switched off entirely when
+no API key is configured.
+
+**Tool use, not retrieval.** The data here is small, structured and already
+behind a filtered API, so the model is given the existing dashboard queries as
+callable tools rather than an index of embedded report text. "What did design
+work on last week?" is a filter, not a similarity search — a retrieval layer
+would be more moving parts and a worse answer. Four tools:
+
+| Tool | Reads |
+| --- | --- |
+| `reportsForWeek` | Achievements, tasks, blockers and hours for a week, whole team or one member |
+| `blockersAcrossTeam` | Every blocker for a week, split into open and resolved |
+| `memberStats` | One member's totals: reports filed, approval rate, tasks, hours |
+| `teamStats` | Compliance, review backlog, who did not submit, workload by project and task type |
+
+**It cannot see more than the person asking.** Every tool calls the same
+`ReportService` and `DashboardService` methods the REST API calls, as the
+manager who asked. Nothing writes its own query. The rule that hides drafts
+lives in the dashboard service, so the assistant inherits it rather than having
+to remember it — the assistant is a new interface over authorised queries, not a
+new path to the data.
+
+**Read-only by construction.** There are no tools that write, and no tool result
+carries a database id. The assistant could not approve a report or change a role
+if it were talked into trying; that is structural rather than an instruction in
+the prompt.
+
+**The loop is bounded.** The model may call tools for four turns; after that it
+is asked once more with the tools withheld, which forces an answer out of what
+it already gathered instead of giving up.
+
+**Prompt design.** Three things are injected per request because the model
+cannot know them: today's date and the current Monday, so "last week" resolves
+to a real week; the active roster, so a partial name maps to a real person
+without spending a tool call; and the status vocabulary, including the fact that
+drafts are invisible — so a member with no report is reported as not having
+submitted, rather than as having done no work.
+
+**Data privacy.** Report text and member names are sent to the model provider as
+tool results, which is the honest cost of the feature. Mitigations: only
+managers can trigger it, only filtered slices leave, and only on demand. The API
+key stays server-side and never reaches the browser. Anyone deploying this
+should confirm the provider's current retention and training terms before
+pointing it at real team data — and the endpoint is one environment variable
+away from being switched off.
+
+---
+
 ## API overview
 
 All paths are prefixed `/api`. Every endpoint except register, login, logout
@@ -376,6 +441,18 @@ unassigned.
 Deleting a user deactivates them rather than dropping the row, so their report
 history survives. Deleting a project is refused once any report references it;
 archive it instead.
+
+### Assistant — manager
+
+| Method | Path | Who |
+| --- | --- | --- |
+| `GET` | `/manager/chat/status` | manager |
+| `POST` | `/manager/chat` | manager |
+
+`POST` takes `{ "message": "...", "history": [{ "role": "USER", "content": "..." }] }`
+and answers `{ "reply", "toolsUsed", "model" }`. The transcript is held by the
+client and replayed, so there is no chat table and no migration for one; the
+server caps how much of it it will read.
 
 ### Errors
 

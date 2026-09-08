@@ -52,6 +52,18 @@ app:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   seed:
     enabled: ${SEED_ENABLED:true}
+  ai:
+    # The assistant is optional. With no key it switches itself off, the endpoint
+    # answers 503 and the widget hides — the rest of the application is untouched,
+    # so a reviewer without a Groq account can still run everything else.
+    enabled: ${AI_ENABLED:true}
+    api-key: ${GROQ_API_KEY:}
+    # Any OpenAI-compatible endpoint works; only these two lines change.
+    base-url: ${GROQ_BASE_URL:https://api.groq.com/openai/v1}
+    model: ${GROQ_MODEL:openai/gpt-oss-120b}
+    max-tool-turns: 4
+    max-history-messages: 12
+    timeout-seconds: 45
   bootstrap:
     # Created once, at startup, and only when the database contains no manager.
     # Change the password in any deployed environment.

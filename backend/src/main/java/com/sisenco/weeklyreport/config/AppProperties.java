@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Every value is overridable by environment variable for deployment.
  */
 @ConfigurationProperties(prefix = "app")
-public record AppProperties(Jwt jwt, Cors cors, Seed seed, Bootstrap bootstrap) {
+public record AppProperties(Jwt jwt, Cors cors, Seed seed, Bootstrap bootstrap, Ai ai) {
 
     public record Jwt(
             /** HMAC-SHA256 signing key. Must be at least 32 bytes. */
@@ -40,5 +40,34 @@ public record AppProperties(Jwt jwt, Cors cors, Seed seed, Bootstrap bootstrap) 
          * because doing so already requires being a manager.
          */
         public record Manager(boolean enabled, String name, String email, String password) {}
+    }
+
+    /**
+     * The AI chat assistant (Section 8), served by any OpenAI-compatible
+     * endpoint. Groq by default.
+     *
+     * @param apiKey blank in a checkout that has no key, which switches the
+     *     feature off rather than failing at startup — the assistant is optional
+     *     and the rest of the application must run without it
+     * @param maxToolTurns how many times the model may call tools before it has
+     *     to answer. Bounded so a model that keeps asking for data cannot spend
+     *     the rate limit on a single question.
+     * @param maxHistoryMessages how much of the transcript the client may replay.
+     *     The conversation is not stored server-side, so this is the only thing
+     *     bounding how large a request can grow.
+     */
+    public record Ai(
+            boolean enabled,
+            String apiKey,
+            String baseUrl,
+            String model,
+            int maxToolTurns,
+            int maxHistoryMessages,
+            int timeoutSeconds) {
+
+        /** Configured <em>and</em> holding a key. Checked before every call. */
+        public boolean usable() {
+            return enabled && apiKey != null && !apiKey.isBlank();
+        }
     }
 }

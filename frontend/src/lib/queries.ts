@@ -7,6 +7,9 @@ import {
 import { api, toQuery } from "./api";
 import type {
   ActivityItem,
+  ChatReply,
+  ChatStatus,
+  ChatTurn,
   DashboardSummary,
   MemberStats,
   MemberStatusBreakdown,
@@ -50,6 +53,7 @@ export const keys = {
   section: (week: string | undefined, section: ReportSection) =>
     ["dashboard", "section", week ?? "current", section] as const,
   memberStats: (id: number) => ["member", id, "stats"] as const,
+  chatStatus: ["chat", "status"] as const,
 };
 
 // -------------------------------------------------------------------- auth
@@ -421,5 +425,37 @@ export function useMemberStats(userId: number) {
     queryKey: keys.memberStats(userId),
     queryFn: () => api.get<MemberStats>(`/manager/members/${userId}/stats`),
     enabled: Number.isFinite(userId),
+  });
+}
+
+// --------------------------------------------------------------- assistant
+
+/**
+ * Whether the assistant is configured on this deployment.
+ *
+ * Asked once and never refetched: it depends on a server environment variable,
+ * which cannot change while the page is open. A failure is not retried either —
+ * the widget simply stays hidden.
+ */
+export function useChatStatus(enabled: boolean) {
+  return useQuery({
+    queryKey: keys.chatStatus,
+    queryFn: () => api.get<ChatStatus>("/manager/chat/status"),
+    enabled,
+    retry: false,
+    staleTime: Infinity,
+  });
+}
+
+/**
+ * Asks the assistant one question.
+ *
+ * Not a query: the same question asked twice is a new exchange, not a cache
+ * hit, and nothing here should be replayed from cache.
+ */
+export function useAskAssistant() {
+  return useMutation({
+    mutationFn: (input: { message: string; history: ChatTurn[] }) =>
+      api.post<ChatReply>("/manager/chat", input),
   });
 }

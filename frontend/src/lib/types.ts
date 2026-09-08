@@ -293,3 +293,24 @@ export interface SaveReportInput {
   notes?: string | null;
   links?: string | null;
 }
+
+// ------------------------------------------------------------- assistant
+
+export type ChatRole = "USER" | "ASSISTANT";
+
+/** One turn of the conversation. The transcript lives in the client. */
+export interface ChatTurn {
+  role: ChatRole;
+  content: string;
+}
+
+export interface ChatReply {
+  reply: string;
+  /** Which lookups ran, so an answer can show it came from the database. */
+  toolsUsed: string[];
+  model: string;
+}
+
+export interface ChatStatus {
+  available: boolean;
+}

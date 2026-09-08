@@ -43,7 +43,14 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
-@TestPropertySource(properties = {"app.seed.enabled=false", "app.bootstrap.manager.enabled=false"})
+@TestPropertySource(
+        properties = {
+            "app.seed.enabled=false",
+            "app.bootstrap.manager.enabled=false",
+            // Pinned empty so a developer who has GROQ_API_KEY exported
+            // does not turn these tests into live calls to a paid API.
+            "app.ai.api-key="
+        })
 @Transactional
 @DisplayName("Role-based access control")
 class RoleBasedAccessControlTest {
@@ -99,6 +106,7 @@ class RoleBasedAccessControlTest {
             mockMvc.perform(get("/api/manager/dashboard/summary")).andExpect(status().isUnauthorized());
             mockMvc.perform(get("/api/users")).andExpect(status().isUnauthorized());
             mockMvc.perform(get("/api/projects")).andExpect(status().isUnauthorized());
+            mockMvc.perform(get("/api/manager/chat/status")).andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -125,6 +133,18 @@ class RoleBasedAccessControlTest {
             mockMvc.perform(get("/api/manager/dashboard/submissions").cookie(ownerSession))
                     .andExpect(status().isForbidden());
             mockMvc.perform(get("/api/users").cookie(ownerSession)).andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("cannot reach the AI assistant, which is scoped to managers")
+        void cannotReachTheAssistant() throws Exception {
+            mockMvc.perform(get("/api/manager/chat/status").cookie(ownerSession))
+                    .andExpect(status().isForbidden());
+            mockMvc.perform(post("/api/manager/chat")
+                            .cookie(ownerSession)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"message\":\"What did the team do last week?\"}"))
+                    .andExpect(status().isForbidden());
         }
 
         @Test
@@ -282,6 +302,32 @@ class RoleBasedAccessControlTest {
                     // The correction opened a fresh version rather than
                     // overwriting the one that was reviewed.
                     .andExpect(jsonPath("$.versions.length()").value(2));
+        }
+
+        @Test
+        @DisplayName("gets a clean 503 from the assistant when no API key is configured")
+        void theAssistantDegradesWithoutAKey() throws Exception {
+            // The feature is optional, so a checkout with no key must still run:
+            // the endpoint says it is unavailable rather than failing at startup.
+            mockMvc.perform(get("/api/manager/chat/status").cookie(managerSession))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.available").value(false));
+
+            mockMvc.perform(post("/api/manager/chat")
+                            .cookie(managerSession)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"message\":\"What did the team do last week?\"}"))
+                    .andExpect(status().isServiceUnavailable());
+        }
+
+        @Test
+        @DisplayName("still has to send a question the assistant can answer")
+        void theAssistantValidatesItsInput() throws Exception {
+            mockMvc.perform(post("/api/manager/chat")
+                            .cookie(managerSession)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"message\":\"   \"}"))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
