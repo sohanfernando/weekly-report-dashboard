@@ -44,6 +44,16 @@
      and "not started" are different problems for a manager. */
   --color-status-missing: #ef4444;
 
+  /*
+   * The auth panel (sign in / registration) uses one deliberately dark
+   * surface, independent of everything above and not conditioned on
+   * prefers-color-scheme — this is a single panel styled dark by design,
+   * not a second theme switching in behind the light one. Named "ink"
+   * rather than reused as a darkened brand value, so it reads as its own
+   * decision rather than as an accidental dark-mode token.
+   */
+  --color-ink: #15132c;
+
   /* Chart series, used in this order across every chart. */
   --color-chart-1: #4f46e5;
   --color-chart-2: #3b82f6;

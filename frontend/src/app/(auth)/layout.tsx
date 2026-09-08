@@ -1,96 +1,123 @@
-import Image from "next/image";
+import { CheckCircle2, Clock3, FileEdit } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
-import illustration from "@/assets/login-register.png";
+import type { ComponentType, ReactNode } from "react";
+import { cn } from "@/lib/cn";
 
 /**
  * Split frame for sign in and registration: a branded panel on the left, the
  * form on the right.
  *
- * Two things about the artwork drive this layout.
+ * The panel carries no photography. Its one graphic element is the product's
+ * own status vocabulary — draft, submitted, approved — staged as a small
+ * offset card stack, in the same shape as the app's own StatusBadge. A
+ * marketing panel that foreshadows the actual UI earns its place better than
+ * a generic illustration would; it is also literally what this product does,
+ * which a stock drawing of "someone at a desk" is not.
  *
- * It has a flat white background rather than a transparent one, so the panel
- * behind it is white too. Anything else — a tint, a gradient, the page's own
- * off-white — draws a visible rectangle around the image, because a picture
- * cannot blend into a colour it does not contain. White against the off-white
- * form side is the same relationship a Card has with the page everywhere else
- * in the app, so the split still reads.
+ * The panel is one deliberately dark surface, independent of the light
+ * palette declared in globals.css and not conditioned on
+ * prefers-color-scheme — see the `--color-ink` token there. It is a single
+ * panel styled dark on purpose, not a second theme switching in behind it.
  *
- * And it is drawn cropped: the desk and chair run off the bottom and left of
- * the canvas. It is composed to bleed off an edge rather than float in the
- * middle of a box, so the copy sits at the top and the illustration fills the
- * bottom of the panel and runs off it.
- *
- * The panel is hidden below lg rather than stacked above the form. On a phone
- * it would push the email field off the bottom of the screen, and the email
- * field is the entire reason someone is on this page.
- *
- * At lg and up the panel floats as a rounded card with a gutter on every
- * side, rather than filling the half-viewport edge to edge — the outer
- * lg:p-4/lg:gap-4 is what makes that gutter, and the sticky offset and height
- * below are sized to match it exactly, so the card's bottom edge lands on the
- * gutter rather than the true viewport edge.
+ * Hidden below lg, same reasoning as before: on a phone this panel would push
+ * the email field off the bottom of the screen, and the email field is the
+ * entire reason someone is on this page. At lg and up it floats as a rounded
+ * card with a gutter, matching the treatment already used across the app.
  */
 export default function AuthLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <div className="flex min-h-dvh lg:items-start lg:gap-4 lg:p-4">
       <aside
-        // Sticky and viewport-high (minus the gutter): registration is a
-        // six-field form and scrolls, and without this the artwork scrolls
-        // away with it and leaves a blank column behind.
-        className="relative hidden w-1/2 shrink-0 flex-col overflow-hidden rounded-2xl
-                   border border-border bg-surface pt-8
-                   lg:sticky lg:top-4 lg:flex lg:h-[calc(100dvh-2rem)]"
+        className="relative hidden w-1/2 shrink-0 flex-col overflow-hidden rounded-2xl bg-ink
+                   text-white lg:sticky lg:top-4 lg:flex lg:h-[calc(100dvh-2rem)]"
       >
-        <div className="px-10 xl:px-14">
-          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="Weekly Reports">
-            <BrandMark />
-            <span className="text-lg font-bold text-brand">Weekly Reports</span>
-          </Link>
-
-          <div className="mt-10 max-w-md xl:mt-12">
-            <p className="text-2xl font-semibold leading-snug text-primary">
-              One report a week. The whole team on one page.
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-secondary">
-              File what you did and what is in your way. Your manager sees the week without
-              chasing anyone, and every version you submitted stays on record.
-            </p>
-          </div>
+        {/*
+          Ambient colour, not a picture: two soft blurred fields in brand and
+          approved-green. Direct children of `aside` rather than of the padded
+          content wrapper below, so `inset-0` measures the panel's full box
+          and the glow can bleed all the way to the rounded corners.
+        */}
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute -left-16 -top-20 size-80 rounded-full bg-brand/50 blur-3xl" />
+          <div className="absolute -bottom-24 -right-12 size-80 rounded-full bg-status-approved/25 blur-3xl" />
         </div>
 
         {/*
-          Sized to the panel's full width, with its own aspect ratio choosing
-          the height — not `fill` with object-contain, which fits the image
-          inside the box and leaves a margin down both sides whenever the box
-          is proportionally taller than the picture.
-
-          mt-auto pushes it to the bottom when there is room to spare, and
-          collapses to nothing when there is not, so on a short viewport the
-          image overflows the bottom of the panel and is clipped there by the
-          aside's own rounded corner. The desk is already drawn running off
-          that edge, so the crop reads as part of the picture.
+          `relative` here — not left `static` — is load-bearing, not
+          decorative: a positioned element paints above a non-positioned one
+          in the same stacking context regardless of source order, so without
+          this the glow behind would sit on top of the content instead of
+          behind it.
         */}
-        <div className="mt-auto pt-8">
-          <Image
-            src={illustration}
-            alt=""
-            // Decorative: it carries nothing the form does not already say.
-            aria-hidden
-            // Above the fold on the first screen anyone sees.
-            priority
-            // Statically imported, so the intrinsic size is known at build
-            // time and this cannot shift layout while it loads.
-            placeholder="blur"
-            sizes="(min-width: 1024px) 50vw, 1px"
-            className="h-auto w-full"
-          />
+        <div className="relative flex h-full flex-col justify-between px-10 py-10 xl:px-14 xl:py-12">
+          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="Weekly Reports">
+            <BrandMark />
+            <span className="text-lg font-bold">Weekly Reports</span>
+          </Link>
+
+          <div className="flex flex-1 items-center">
+            <div className="relative h-56 w-full max-w-xs">
+              <StatusChip
+                icon={FileEdit}
+                label="Draft saved"
+                className="left-0 top-0 -rotate-3 border-white/15 bg-white/10 text-white/70"
+              />
+              <StatusChip
+                icon={Clock3}
+                label="Submitted for review"
+                className="left-6 top-20 rotate-2 border-status-submitted/30 bg-status-submitted/15
+                           text-status-submitted"
+              />
+              <StatusChip
+                icon={CheckCircle2}
+                label="Approved"
+                className="left-2 top-40 -rotate-1 border-status-approved/30 bg-status-approved/15
+                           text-status-approved"
+              />
+            </div>
+          </div>
+
+          <div className="max-w-md">
+            <p className="text-4xl font-extrabold leading-[1.05] tracking-tight xl:text-5xl">
+              Stop chasing
+              <br />
+              <span className="text-status-approved">status updates.</span>
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-white/70">
+              File your week once. Your manager sees exactly where things stand — no
+              follow-up messages required.
+            </p>
+          </div>
         </div>
       </aside>
 
       <main className="flex min-h-dvh flex-1 items-center justify-center px-4 py-10 sm:px-8 lg:min-h-0">
         <div className="w-full max-w-sm">{children}</div>
       </main>
+    </div>
+  );
+}
+
+/** One card in the status stack. Absolutely positioned; `className` places and rotates it. */
+function StatusChip({
+  icon: Icon,
+  label,
+  className,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "absolute inline-flex items-center gap-2 whitespace-nowrap rounded-xl border px-4 py-3",
+        "text-sm font-medium shadow-lg shadow-black/20 backdrop-blur-sm",
+        className,
+      )}
+    >
+      <Icon className="size-4" />
+      {label}
     </div>
   );
 }
