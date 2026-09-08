@@ -24,16 +24,23 @@ import illustration from "@/assets/login-register.png";
  * The panel is hidden below lg rather than stacked above the form. On a phone
  * it would push the email field off the bottom of the screen, and the email
  * field is the entire reason someone is on this page.
+ *
+ * At lg and up the panel floats as a rounded card with a gutter on every
+ * side, rather than filling the half-viewport edge to edge — the outer
+ * lg:p-4/lg:gap-4 is what makes that gutter, and the sticky offset and height
+ * below are sized to match it exactly, so the card's bottom edge lands on the
+ * gutter rather than the true viewport edge.
  */
 export default function AuthLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="flex min-h-dvh lg:items-start">
+    <div className="flex min-h-dvh lg:items-start lg:gap-4 lg:p-4">
       <aside
-        // Sticky and viewport-high: registration is a six-field form and
-        // scrolls, and without this the artwork scrolls away with it and
-        // leaves a blank column behind.
-        className="relative hidden w-1/2 shrink-0 flex-col overflow-hidden border-r border-border
-                   bg-surface pt-8 lg:sticky lg:top-0 lg:flex lg:h-dvh"
+        // Sticky and viewport-high (minus the gutter): registration is a
+        // six-field form and scrolls, and without this the artwork scrolls
+        // away with it and leaves a blank column behind.
+        className="relative hidden w-1/2 shrink-0 flex-col overflow-hidden rounded-2xl
+                   border border-border bg-surface pt-8
+                   lg:sticky lg:top-4 lg:flex lg:h-[calc(100dvh-2rem)]"
       >
         <div className="px-10 xl:px-14">
           <Link href="/" className="inline-flex items-center gap-2.5" aria-label="Weekly Reports">
@@ -61,8 +68,8 @@ export default function AuthLayout({ children }: Readonly<{ children: ReactNode 
           mt-auto pushes it to the bottom when there is room to spare, and
           collapses to nothing when there is not, so on a short viewport the
           image overflows the bottom of the panel and is clipped there by the
-          aside. The desk is already drawn running off that edge, so the crop
-          reads as part of the picture.
+          aside's own rounded corner. The desk is already drawn running off
+          that edge, so the crop reads as part of the picture.
         */}
         <div className="mt-auto pt-8">
           <Image
@@ -81,7 +88,7 @@ export default function AuthLayout({ children }: Readonly<{ children: ReactNode 
         </div>
       </aside>
 
-      <main className="flex min-h-dvh flex-1 items-center justify-center px-4 py-10 sm:px-8">
+      <main className="flex min-h-dvh flex-1 items-center justify-center px-4 py-10 sm:px-8 lg:min-h-0">
         <div className="w-full max-w-sm">{children}</div>
       </main>
     </div>
