@@ -454,16 +454,35 @@ export function Badge({
 
 // ----------------------------------------------------------------- table
 
+/**
+ * A table at three widths.
+ *
+ * A six-column table cannot be made to work on a phone by shrinking it, so it
+ * stops being a table:
+ *
+ * <ul>
+ *   <li><b>768px and up</b> — the real thing, scrolling sideways in its own
+ *       container rather than pushing the page.
+ *   <li><b>640&ndash;767px</b> — the same table minus its secondary columns,
+ *       which each page marks with `sm:max-md:hidden`. The 42rem floor lifts
+ *       here, so what is left fits without a horizontal scrollbar.
+ *   <li><b>Below 640px</b> — every row becomes a card and every cell a
+ *       label/value line, driven by the `label` prop on {@link Td}. The
+ *       transformation is CSS in globals.css under `.wr-table`, so there is no
+ *       second markup tree to keep in step with the first.
+ * </ul>
+ *
+ * overflow-y is pinned to hidden alongside overflow-x on purpose: setting
+ * overflow-x alone promotes overflow-y from visible to auto, which would make
+ * this a vertical scroll container too and let transient overflow flash a
+ * scrollbar. There is no height constraint, so nothing real is ever clipped.
+ */
 export function Table({ children, className }: { children: ReactNode; className?: string }) {
-  // Wide tables scroll sideways inside their own container rather than pushing
-  // the page. overflow-y is pinned to hidden on purpose: setting overflow-x
-  // alone promotes overflow-y from visible to auto, which turns this into a
-  // vertical scroll container as well and lets any transient overflow inside
-  // flash a scrollbar. The wrapper has no height constraint, so there is never
-  // real vertical content to clip.
   return (
-    <div className="w-full overflow-x-auto overflow-y-hidden">
-      <table className={cn("w-full min-w-[42rem] text-left text-sm", className)}>{children}</table>
+    <div className="w-full md:overflow-x-auto md:overflow-y-hidden">
+      <table className={cn("wr-table w-full text-left text-sm md:min-w-[42rem]", className)}>
+        {children}
+      </table>
     </div>
   );
 }
@@ -482,9 +501,27 @@ export function Th({ children, className }: { children?: ReactNode; className?: 
   );
 }
 
-export function Td({ children, className }: { children?: ReactNode; className?: string }) {
+/**
+ * @param label the column name, repeated on the cell so the card layout below
+ *     640px can print it beside the value. A cell with no label — an actions
+ *     column — is laid out on its own line instead of getting a blank one.
+ */
+export function Td({
+  children,
+  className,
+  label,
+}: {
+  children?: ReactNode;
+  className?: string;
+  label?: string;
+}) {
   return (
-    <td className={cn("border-b border-border px-4 py-3 align-middle", className)}>{children}</td>
+    <td
+      data-label={label}
+      className={cn("border-b border-border px-4 py-3 align-middle", className)}
+    >
+      {children}
+    </td>
   );
 }
 

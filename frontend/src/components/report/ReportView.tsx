@@ -27,24 +27,29 @@ export function ReportView({ version }: { version: ReportVersion }) {
             <thead>
               <tr>
                 <Th>Task</Th>
-                <Th>Priority</Th>
+                <Th className="sm:max-md:hidden">Priority</Th>
                 <Th>Status</Th>
-                <Th className="text-right">Planned</Th>
+                <Th className="text-right sm:max-md:hidden">Planned</Th>
                 <Th className="text-right">Actual</Th>
                 <Th className="text-right">Hours</Th>
-                <Th>Deliverable</Th>
+                <Th className="sm:max-md:hidden">Deliverable</Th>
               </tr>
             </thead>
             <tbody>
               {version.tasks.map((task, index) => (
                 <tr key={task.id ?? index}>
-                  <Td className="font-medium text-primary">{task.name}</Td>
-                  <Td>
+                  <Td label="Task" className="font-medium text-primary">{task.name}</Td>
+                  <Td label="Priority" className="sm:max-md:hidden">
                     <PriorityPill priority={task.priority} />
                   </Td>
-                  <Td className="text-secondary">{TASK_STATUS_LABEL[task.status]}</Td>
-                  <Td className="text-right tabular-nums text-secondary">{task.plannedPct}%</Td>
-                  <Td className="text-right tabular-nums">
+                  <Td label="Status" className="text-secondary">{TASK_STATUS_LABEL[task.status]}</Td>
+                  <Td
+                    label="Planned"
+                    className="text-right tabular-nums text-secondary sm:max-md:hidden"
+                  >
+                    {task.plannedPct}%
+                  </Td>
+                  <Td label="Actual" className="text-right tabular-nums">
                     <span
                       className={cn(
                         // On or above plan reads as approved-green; behind plan
@@ -58,10 +63,12 @@ export function ReportView({ version }: { version: ReportVersion }) {
                       {task.actualPct}%
                     </span>
                   </Td>
-                  <Td className="text-right tabular-nums text-secondary">
+                  <Td label="Hours" className="text-right tabular-nums text-secondary">
                     {hours(Number(task.hoursSpent))} / {hours(Number(task.hoursPlanned))}
                   </Td>
-                  <Td className="text-secondary">{task.deliverable || "—"}</Td>
+                  <Td label="Deliverable" className="text-secondary sm:max-md:hidden">
+                    {task.deliverable || "—"}
+                  </Td>
                 </tr>
               ))}
             </tbody>

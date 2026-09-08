@@ -128,17 +128,17 @@ export default function ProjectsPage() {
               <tr>
                 <Th>Project</Th>
                 <Th>Code</Th>
-                <Th>Description</Th>
-                <Th>Members</Th>
+                <Th className="sm:max-md:hidden">Description</Th>
+                <Th className="sm:max-md:hidden">Members</Th>
                 <Th>Status</Th>
-                <Th>Created</Th>
+                <Th className="sm:max-md:hidden">Created</Th>
                 {isManager && <Th />}
               </tr>
             </thead>
             <Reveal as="tbody" stagger="tr" deps={[projects.length]}>
               {projects.map((project) => (
                 <tr key={project.id} className="transition hover:bg-surface-muted/50">
-                  <Td>
+                  <Td label="Project">
                     <span className="inline-flex items-center gap-2 font-medium text-primary">
                       <span
                         className="size-2.5 rounded-full"
@@ -147,16 +147,21 @@ export default function ProjectsPage() {
                       {project.name}
                     </span>
                   </Td>
-                  <Td>
+                  <Td label="Code">
                     <Badge>{project.code}</Badge>
                   </Td>
-                  <Td className="max-w-md truncate text-secondary">{project.description ?? "—"}</Td>
-                  <Td className="text-secondary tabular-nums">
+                  <Td
+                    label="Description"
+                    className="text-secondary sm:max-md:hidden md:max-w-md md:truncate"
+                  >
+                    {project.description ?? "—"}
+                  </Td>
+                  <Td label="Members" className="text-secondary tabular-nums sm:max-md:hidden">
                     {project.memberCount > 0
                       ? `${project.memberCount} assigned`
                       : "Anyone"}
                   </Td>
-                  <Td>
+                  <Td label="Status">
                     <span
                       className={
                         project.active ? "text-status-approved" : "text-secondary"
@@ -165,7 +170,9 @@ export default function ProjectsPage() {
                       {project.active ? "Active" : "Archived"}
                     </span>
                   </Td>
-                  <Td className="text-secondary">{shortDate(project.createdAt)}</Td>
+                  <Td label="Created" className="text-secondary sm:max-md:hidden">
+                    {shortDate(project.createdAt)}
+                  </Td>
                   {isManager && (
                     <Td className="text-right">
                       {confirmDelete === project.id ? (

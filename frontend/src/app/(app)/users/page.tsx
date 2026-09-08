@@ -134,11 +134,11 @@ export default function UsersPage() {
               <thead>
                 <tr>
                   <Th>Name</Th>
-                  <Th>Email</Th>
-                  <Th>Job title</Th>
+                  <Th className="sm:max-md:hidden">Email</Th>
+                  <Th className="sm:max-md:hidden">Job title</Th>
                   <Th>Role</Th>
                   <Th>Status</Th>
-                  <Th>Joined</Th>
+                  <Th className="sm:max-md:hidden">Joined</Th>
                   <Th />
                 </tr>
               </thead>
@@ -147,13 +147,17 @@ export default function UsersPage() {
                   const isSelf = user.id === me?.id;
                   return (
                     <tr key={user.id} className="transition hover:bg-surface-muted/50">
-                      <Td className="font-medium text-primary">
+                      <Td label="Name" className="font-medium text-primary">
                         {user.name}
                         {isSelf && <span className="ml-2 text-xs text-secondary">(you)</span>}
                       </Td>
-                      <Td className="text-secondary">{user.email}</Td>
-                      <Td className="text-secondary">{user.jobTitle ?? "—"}</Td>
-                      <Td className="w-36">
+                      <Td label="Email" className="text-secondary sm:max-md:hidden">
+                        <span className="truncate">{user.email}</span>
+                      </Td>
+                      <Td label="Job title" className="text-secondary sm:max-md:hidden">
+                        {user.jobTitle ?? "—"}
+                      </Td>
+                      <Td label="Role" className="w-36">
                         <Select
                           className="h-8 text-xs"
                           value={user.role}
@@ -177,7 +181,7 @@ export default function UsersPage() {
                           <option value="MANAGER">Manager</option>
                         </Select>
                       </Td>
-                      <Td>
+                      <Td label="Status">
                         <span
                           className={
                             user.active ? "text-status-approved" : "text-secondary"
@@ -186,7 +190,9 @@ export default function UsersPage() {
                           {user.active ? "Active" : "Inactive"}
                         </span>
                       </Td>
-                      <Td className="text-secondary">{shortDate(user.createdAt)}</Td>
+                      <Td label="Joined" className="text-secondary sm:max-md:hidden">
+                        {shortDate(user.createdAt)}
+                      </Td>
                       <Td className="text-right">
                         {!isSelf && (
                           <span className="inline-flex gap-1">

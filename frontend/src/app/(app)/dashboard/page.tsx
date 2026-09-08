@@ -158,9 +158,9 @@ export default function DashboardPage() {
             <thead>
               <tr>
                 <Th>Team member</Th>
-                <Th>Role</Th>
+                <Th className="sm:max-md:hidden">Role</Th>
                 <Th>Status</Th>
-                <Th>Version</Th>
+                <Th className="sm:max-md:hidden">Version</Th>
                 <Th>Submitted</Th>
                 <Th />
               </tr>
@@ -168,15 +168,17 @@ export default function DashboardPage() {
             <Reveal as="tbody" stagger="tr" deps={[week, submissions.data.length]}>
               {submissions.data.map((row) => (
                 <tr key={row.userId} className="transition hover:bg-surface-muted/50">
-                  <Td className="font-medium text-primary">{row.userName}</Td>
-                  <Td className="text-secondary">{row.jobTitle ?? "—"}</Td>
-                  <Td>
+                  <Td label="Team member" className="font-medium text-primary">{row.userName}</Td>
+                  <Td label="Role" className="text-secondary sm:max-md:hidden">{row.jobTitle ?? "—"}</Td>
+                  <Td label="Status">
                     <StatusBadge state={row.state} />
                   </Td>
-                  <Td className="tabular-nums text-secondary">
+                  <Td label="Version" className="tabular-nums text-secondary sm:max-md:hidden">
                     {row.versionNo ? `v${row.versionNo}` : "—"}
                   </Td>
-                  <Td className="text-secondary">{row.submittedAt ? relative(row.submittedAt) : "—"}</Td>
+                  <Td label="Submitted" className="text-secondary">
+                    {row.submittedAt ? relative(row.submittedAt) : "—"}
+                  </Td>
                   <Td className="text-right">
                     {row.reportId ? (
                       <Link

@@ -116,8 +116,8 @@ function MyReportsPageContent() {
                   <Th>Week</Th>
                   <Th>Project</Th>
                   <Th>Status</Th>
-                  <Th>Version</Th>
-                  <Th>Submitted</Th>
+                  <Th className="sm:max-md:hidden">Version</Th>
+                  <Th className="sm:max-md:hidden">Submitted</Th>
                   <Th>Last updated</Th>
                   <Th />
                 </tr>
@@ -125,10 +125,10 @@ function MyReportsPageContent() {
               <Reveal as="tbody" stagger="tr" deps={[data.page, data.content.length]}>
                 {data.content.map((report) => (
                   <tr key={report.id} className="transition hover:bg-surface-muted/50">
-                    <Td className="font-medium text-primary">
+                    <Td label="Week" className="font-medium text-primary">
                       {weekRangeLabel(report.weekStart, report.weekEnd)}
                     </Td>
-                    <Td>
+                    <Td label="Project">
                       {report.projectName ? (
                         <span className="inline-flex items-center gap-1.5 text-secondary">
                           <span
@@ -141,12 +141,18 @@ function MyReportsPageContent() {
                         <span className="text-secondary">—</span>
                       )}
                     </Td>
-                    <Td>
+                    <Td label="Status">
                       <StatusBadge state={report.status} />
                     </Td>
-                    <Td className="tabular-nums text-secondary">v{report.currentVersionNo ?? 1}</Td>
-                    <Td className="text-secondary">{shortDate(report.submittedAt)}</Td>
-                    <Td className="text-secondary">{relative(report.updatedAt)}</Td>
+                    <Td label="Version" className="tabular-nums text-secondary sm:max-md:hidden">
+                      v{report.currentVersionNo ?? 1}
+                    </Td>
+                    <Td label="Submitted" className="text-secondary sm:max-md:hidden">
+                      {shortDate(report.submittedAt)}
+                    </Td>
+                    <Td label="Last updated" className="text-secondary">
+                      {relative(report.updatedAt)}
+                    </Td>
                     <Td className="text-right">
                       <Link
                         href={`/reports/${report.id}`}

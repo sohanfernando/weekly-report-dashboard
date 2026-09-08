@@ -101,3 +101,92 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/*
+ * Tables below 640px.
+ *
+ * A six-column table has no honest small-screen form. Squeezing it produces
+ * four-character columns; scrolling it sideways hides the columns that matter
+ * behind a gesture nobody performs. So below the `sm` breakpoint each row
+ * becomes a card and each cell a label/value line, with the header row hidden
+ * because every cell now carries its own label.
+ *
+ * Done in CSS against one class rather than by rendering a second component
+ * tree, so there is exactly one piece of table markup per page to keep correct.
+ * The labels come from the `label` prop on Td, which writes `data-label`.
+ */
+@media (width < 40rem) {
+  .wr-table,
+  .wr-table tbody,
+  .wr-table tr,
+  .wr-table td {
+    display: block;
+  }
+
+  /* Every table sits inside a Card, and the cells lose their own px-4 below,
+     so the padding that keeps rows off the card edge moves here. */
+  .wr-table {
+    padding: 0.75rem;
+  }
+
+  /* Every cell carries its own label now, so the header is duplication. */
+  .wr-table thead {
+    display: none;
+  }
+
+  .wr-table tr {
+    margin-bottom: 0.625rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.625rem;
+    /* Muted rather than surface: these cards sit inside a white Card, so a
+       white fill would read as a box drawn around nothing. */
+    background: var(--color-surface-muted);
+    padding: 0.25rem 0.875rem;
+  }
+
+  .wr-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .wr-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    /* Overrides the utility classes on the cell itself: a fixed column width
+       and a right-aligned column both stop making sense once the cell is a
+       full-width row. */
+    width: auto;
+    max-width: none;
+    padding: 0.5rem 0;
+    text-align: left;
+    border: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .wr-table tr td:last-child {
+    border-bottom: 0;
+  }
+
+  .wr-table td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-secondary);
+  }
+
+  /* The actions cell has no label, so it gets the width to itself. */
+  .wr-table td:not([data-label]) {
+    justify-content: flex-end;
+  }
+
+  /* A cell holding a control rather than text: let it use the row. */
+  .wr-table td > select,
+  .wr-table td > .wr-td-grow {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}

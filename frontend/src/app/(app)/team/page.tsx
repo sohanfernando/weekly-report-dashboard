@@ -60,9 +60,9 @@ export default function TeamPage() {
               <tr>
                 <Th>Name</Th>
                 <Th>Role</Th>
-                <Th>Email</Th>
+                <Th className="sm:max-md:hidden">Email</Th>
                 <Th>This week</Th>
-                <Th>Last submitted</Th>
+                <Th className="sm:max-md:hidden">Last submitted</Th>
                 <Th />
               </tr>
             </thead>
@@ -71,16 +71,20 @@ export default function TeamPage() {
                 const row = stateByUser.get(member.id);
                 return (
                   <tr key={member.id} className="transition hover:bg-surface-muted/50">
-                    <Td className="font-medium text-primary">
+                    <Td label="Name" className="font-medium text-primary">
                       {member.name}
                       {!member.active && (
                         <span className="ml-2 text-xs text-secondary">(inactive)</span>
                       )}
                     </Td>
-                    <Td className="text-secondary">{member.jobTitle ?? "—"}</Td>
-                    <Td className="text-secondary">{member.email}</Td>
-                    <Td>{row ? <StatusBadge state={row.state} /> : <span className="text-secondary">—</span>}</Td>
-                    <Td className="text-secondary">
+                    <Td label="Role" className="text-secondary">{member.jobTitle ?? "—"}</Td>
+                    <Td label="Email" className="text-secondary sm:max-md:hidden">
+                      <span className="truncate">{member.email}</span>
+                    </Td>
+                    <Td label="This week">
+                      {row ? <StatusBadge state={row.state} /> : <span className="text-secondary">—</span>}
+                    </Td>
+                    <Td label="Last submitted" className="text-secondary sm:max-md:hidden">
                       {row?.submittedAt ? relative(row.submittedAt) : "—"}
                     </Td>
                     <Td className="text-right">

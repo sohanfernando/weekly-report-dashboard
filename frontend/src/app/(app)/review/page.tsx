@@ -138,21 +138,21 @@ export default function ReviewQueuePage() {
                   <Th>Week</Th>
                   <Th>Project</Th>
                   <Th>Status</Th>
-                  <Th>Version</Th>
-                  <Th>Submitted</Th>
+                  <Th className="sm:max-md:hidden">Version</Th>
+                  <Th className="sm:max-md:hidden">Submitted</Th>
                   <Th />
                 </tr>
               </thead>
               <Reveal as="tbody" stagger="tr" deps={[data.page, data.content.length]}>
                 {data.content.map((report) => (
                   <tr key={report.id} className="transition hover:bg-surface-muted/50">
-                    <Td className="font-medium text-primary">
+                    <Td label="Team member" className="font-medium text-primary">
                       <Link href={`/team/${report.userId}`} className="hover:underline">
                         {report.userName}
                       </Link>
                     </Td>
-                    <Td>{weekRangeLabel(report.weekStart, report.weekEnd)}</Td>
-                    <Td>
+                    <Td label="Week">{weekRangeLabel(report.weekStart, report.weekEnd)}</Td>
+                    <Td label="Project">
                       {report.projectName ? (
                         <span className="inline-flex items-center gap-1.5 text-secondary">
                           <span
@@ -165,11 +165,15 @@ export default function ReviewQueuePage() {
                         <span className="text-secondary">—</span>
                       )}
                     </Td>
-                    <Td>
+                    <Td label="Status">
                       <StatusBadge state={report.status} />
                     </Td>
-                    <Td className="tabular-nums text-secondary">v{report.currentVersionNo ?? 1}</Td>
-                    <Td className="text-secondary">{relative(report.submittedAt)}</Td>
+                    <Td label="Version" className="tabular-nums text-secondary sm:max-md:hidden">
+                      v{report.currentVersionNo ?? 1}
+                    </Td>
+                    <Td label="Submitted" className="text-secondary sm:max-md:hidden">
+                      {relative(report.submittedAt)}
+                    </Td>
                     <Td className="text-right">
                       <Link
                         href={
