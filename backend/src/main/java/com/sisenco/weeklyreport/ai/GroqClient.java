@@ -43,7 +43,12 @@ public class GroqClient {
     /** Low, because this assistant reports figures rather than inventing prose. */
     private static final double TEMPERATURE = 0.2;
 
-    private static final int MAX_TOKENS = 1500;
+    /**
+     * A structural backstop under the prompt's length rules. The answers this
+     * assistant should give are short, and without a ceiling a model asked for
+     * "a full summary" will write a page the chat panel cannot show.
+     */
+    private static final int MAX_TOKENS = 800;
 
     private static final JsonMapper MAPPER = JsonMapper.builder()
             .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)

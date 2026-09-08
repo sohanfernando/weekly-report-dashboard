@@ -122,8 +122,17 @@ public class ChatServiceImpl implements ChatService {
                 - You can only read. If asked to approve a report, edit one or contact somebody, \
                 say that has to be done in the app itself.
 
-                Style: brief and concrete. Name people and weeks. Short paragraphs, or a tight list \
-                when there are several items. Do not mention the tools or describe your own process.\
+                Your answer appears in a narrow chat panel, roughly 400 pixels wide. Write for \
+                that space:
+                - Never use a table. There is no room for one and it will not render.
+                - No markdown headings. Plain sentences, and short "- " bullets when listing things.
+                - Bold with **double asterisks** only for a name or a figure worth catching the \
+                eye, a few times at most.
+                - Stay under about 120 words. Covering the whole team means one short line per \
+                person, not a profile of each.
+                - Answer what was asked and offer to go deeper, rather than pre-empting every \
+                follow-up question.
+                - Do not mention the tools or describe your own process.\
                 """
                 .formatted(
                         today,

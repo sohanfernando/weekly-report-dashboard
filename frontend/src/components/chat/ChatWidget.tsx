@@ -9,6 +9,9 @@ import { DURATION, EASE, prefersReducedMotion } from "@/lib/motion";
 import { useAskAssistant, useChatStatus, useMe } from "@/lib/queries";
 import type { ChatTurn } from "@/lib/types";
 
+/** Line break, named so the JSX below stays readable. */
+const NEWLINE = "\n";
+
 /** Openers, so the first use is not a blank box and a blinking cursor. */
 const SUGGESTIONS = [
   "Summarise this week for me",
@@ -135,7 +138,7 @@ export function ChatWidget() {
           ref={panelRef}
           role="dialog"
           aria-label="Team assistant"
-          className="fixed bottom-24 right-6 z-40 flex w-[min(26rem,calc(100vw-3rem))]
+          className="fixed bottom-24 right-6 z-40 flex w-[min(28rem,calc(100vw-3rem))]
                      h-[min(34rem,calc(100dvh-9rem))] flex-col overflow-hidden rounded-xl
                      border border-border bg-surface shadow-xl"
         >
@@ -241,7 +244,10 @@ function Bubble({ turn }: { turn: ChatTurn }) {
   if (turn.role === "USER") {
     return (
       <div className="flex justify-end">
-        <p className="max-w-[85%] whitespace-pre-wrap rounded-xl rounded-br-sm bg-brand px-3 py-2 text-sm text-brand-foreground">
+        <p
+          className="max-w-[85%] whitespace-pre-wrap break-words rounded-xl rounded-br-sm
+                     bg-brand px-3 py-2 text-sm text-brand-foreground"
+        >
           {turn.content}
         </p>
       </div>
@@ -253,9 +259,71 @@ function Bubble({ turn }: { turn: ChatTurn }) {
       <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
         <Bot className="size-3.5" />
       </span>
-      <p className="max-w-[85%] whitespace-pre-wrap rounded-xl rounded-bl-sm bg-background px-3 py-2 text-sm text-primary">
-        {turn.content}
-      </p>
+      <div
+        className="min-w-0 max-w-[85%] break-words rounded-xl rounded-bl-sm bg-background
+                   px-3 py-2 text-sm text-primary"
+      >
+        <Markdown text={turn.content} />
+      </div>
     </div>
+  );
+}
+
+/**
+ * Just enough markdown for what this assistant is asked to produce: bold, "- "
+ * bullets and paragraph breaks.
+ *
+ * A full markdown library would be a dependency and a security surface for
+ * model output, to render three constructs. The prompt already rules out
+ * tables and headings, so this handles the rest and lets anything unexpected
+ * fall through as plain text rather than as broken markup.
+ */
+function Markdown({ text }: { text: string }) {
+  // Group consecutive "- " lines so a list renders as one <ul>.
+  const blocks: { bullet: boolean; lines: string[] }[] = [];
+  for (const line of text.split(/\r?\n/)) {
+    const bullet = /^\s*[-*•]\s+/.test(line);
+    if (!line.trim()) continue;
+    const last = blocks[blocks.length - 1];
+    if (last && last.bullet === bullet) last.lines.push(line);
+    else blocks.push({ bullet, lines: [line] });
+  }
+
+  return (
+    <>
+      {blocks.map((block, index) =>
+        block.bullet ? (
+          <ul key={index} className="my-1 list-disc space-y-0.5 pl-4 marker:text-secondary">
+            {block.lines.map((line, item) => (
+              <li key={item}>
+                <Inline text={line.replace(/^\s*[-*•]\s+/, "")} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p key={index} className="my-1 whitespace-pre-wrap first:mt-0 last:mb-0">
+            <Inline text={block.lines.join(NEWLINE)} />
+          </p>
+        ),
+      )}
+    </>
+  );
+}
+
+/** Bold spans. Split rather than replaced, so nothing is injected as HTML. */
+function Inline({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/\*\*(.+?)\*\*/g).map((part, index) =>
+        // Odd indices are the captured groups, i.e. what was inside the asterisks.
+        index % 2 === 1 ? (
+          <strong key={index} className="font-semibold">
+            {part}
+          </strong>
+        ) : (
+          part
+        ),
+      )}
+    </>
   );
 }
