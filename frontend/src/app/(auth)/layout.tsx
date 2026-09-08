@@ -1,6 +1,7 @@
 import { CheckCircle2, Clock3, FileEdit } from "lucide-react";
 import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { cn } from "@/lib/cn";
 
 /**
@@ -119,17 +120,5 @@ function StatusChip({
       <Icon className="size-4" />
       {label}
     </div>
-  );
-}
-
-/** The favicon tile, inline so the panel does not fetch an image for a 32px mark. */
-function BrandMark() {
-  return (
-    <svg viewBox="0 0 32 32" className="size-8 shrink-0" aria-hidden>
-      <rect width="32" height="32" rx="7" fill="#4F46E5" />
-      <rect x="8" y="9" width="16" height="4" rx="2" fill="#FFFFFF" />
-      <rect x="8" y="16" width="16" height="4" rx="2" fill="#FFFFFF" />
-      <rect x="8" y="23" width="9" height="4" rx="2" fill="#10B981" />
-    </svg>
   );
 }
