@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderKanban, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Archive, ArchiveRestore, FolderKanban, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Collapse } from "@/components/motion/Collapse";
 import { Reveal } from "@/components/motion/Reveal";
@@ -217,6 +217,54 @@ export default function ProjectsPage() {
                             }}
                           >
                             <Pencil className="size-3.5" /> Edit
+                          </Button>
+                          {/*
+                            Archiving is what the delete refusal tells you to
+                            do when a project is referenced by reports, so it
+                            needs to be reachable from the same row that
+                            refused — otherwise the message names an action
+                            with no control behind it, and the only way to
+                            perform it is to open Edit and find a checkbox.
+                          */}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title={project.active ? "Archive this project" : "Make active again"}
+                            aria-label={
+                              project.active ? "Archive this project" : "Make active again"
+                            }
+                            loading={
+                              saveProject.isPending && saveProject.variables?.id === project.id
+                            }
+                            onClick={() => {
+                              setError(null);
+                              saveProject.mutate(
+                                {
+                                  id: project.id,
+                                  // A full replacement, so the fields that are
+                                  // not changing still have to be sent.
+                                  name: project.name,
+                                  code: project.code,
+                                  description: project.description,
+                                  color: project.color,
+                                  active: !project.active,
+                                },
+                                {
+                                  onError: (err) =>
+                                    setError(
+                                      err instanceof ApiError
+                                        ? err.message
+                                        : "Could not change the project.",
+                                    ),
+                                },
+                              );
+                            }}
+                          >
+                            {project.active ? (
+                              <Archive className="size-3.5" />
+                            ) : (
+                              <ArchiveRestore className="size-3.5" />
+                            )}
                           </Button>
                           <Button
                             variant="ghost"

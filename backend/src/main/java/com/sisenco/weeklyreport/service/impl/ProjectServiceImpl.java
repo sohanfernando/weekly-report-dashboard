@@ -100,7 +100,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (reportRepository.existsByProjectId(projectId)) {
             throw new ConflictException(
                     "This project is used by existing reports and cannot be deleted. "
-                            + "Set it to inactive instead, which hides it from new reports "
+                            + "Archive it instead, which hides it from new reports "
                             + "while keeping past ones readable.");
         }
 
