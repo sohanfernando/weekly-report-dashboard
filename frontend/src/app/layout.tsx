@@ -23,7 +23,19 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full font-sans">
+      {/*
+        Browser extensions write their own attributes onto <body> — Grammarly
+        adds data-gr-ext-installed and data-new-gr-c-s-check-loaded — between
+        the server HTML arriving and React hydrating it. React then finds
+        attributes the server never sent and reports a mismatch that no code
+        here can prevent, because nothing here put them there.
+
+        suppressHydrationWarning applies one level deep: it covers this
+        element's own attributes and nothing else, so a genuine mismatch
+        anywhere inside the app is still reported. That narrowness is the
+        reason it belongs here and not higher up.
+      */}
+      <body className="min-h-full font-sans" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>
