@@ -249,14 +249,19 @@ weekly-report-dashboard/
         └── lib/          API client, query hooks, shared types
 ```
 
-### Entity relationship diagram
+### The schema
 
-![ER diagram](docs/er-diagram.png)
+`backend/src/main/resources/db/migration/V1__init.sql` is the source of truth
+for the schema — ten tables, with the enums stored as VARCHAR plus a CHECK
+constraint rather than MySQL's own ENUM, so adding a value is a migration
+rather than a table rebuild. Hibernate runs with `ddl-auto=validate` against
+it, so any drift between the entities and the migration fails at startup
+instead of silently at runtime.
 
-Rendered by `docs/er-diagram.py`, which draws the boxes and routes the
-connectors by hand from the schema in `V1__init.sql`. It is not generated from
-a live database, so **a schema change means editing both** — the migration and
-that script.
+The relationships worth knowing before reading it: `reports` holds ownership
+and status, `report_versions` holds the immutable content snapshots, and the
+task, blocker, achievement and hours tables hang off a **version** rather than
+off the report.
 
 ### Report versioning
 
