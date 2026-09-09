@@ -192,11 +192,4 @@ input[type="number"] {
   .wr-table td:not([data-label]) {
     justify-content: flex-end;
   }
-
-  /* A cell holding a control rather than text: let it use the row. */
-  .wr-table td > select,
-  .wr-table td > .wr-td-grow {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
 }

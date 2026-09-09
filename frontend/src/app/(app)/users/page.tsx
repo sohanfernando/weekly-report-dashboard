@@ -159,7 +159,13 @@ export default function UsersPage() {
                       </Td>
                       <Td label="Role" className="w-36">
                         <Select
-                          className="h-8 text-xs"
+                          // max-sm:w-36 matches the width this cell already
+                          // has as a table column. Card mode drops that
+                          // column width (a fixed one stops meaning anything
+                          // once the cell is a full-width row), and without
+                          // it the wrapper's own w-full stretched the control
+                          // across everything the label was not using.
+                          className="h-8 text-xs max-sm:w-36"
                           value={user.role}
                           /* Changing your own role is refused by the API, so do
                              not offer it and invite a 409. Only the row being
