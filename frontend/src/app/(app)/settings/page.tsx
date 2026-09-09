@@ -154,9 +154,25 @@ function PasswordCard() {
         {done && <Alert tone="success">Password changed.</Alert>}
 
         <Field label="Current password" htmlFor="current-password" required>
+          {/*
+            "new-password", deliberately, on a field that holds the *current*
+            one. The semantically correct value is "current-password", and that
+            is what the sign-in page uses — but there it is an invitation the
+            browser should accept, and here it is not.
+
+            This field exists so somebody proves they know the password before
+            changing it. A manager filling it in defeats that: anyone at an
+            unlocked machine could then change the password without knowing it.
+            The reveal toggle makes it worse, because ours shows the value with
+            no OS check, where Chrome's own reveal asks for one.
+
+            autocomplete="off" is not an option — browsers ignore it on
+            password inputs. Marking the field as a new password is the only
+            reliable way to tell them not to fill it.
+          */}
           <PasswordInput
             id="current-password"
-            autoComplete="current-password"
+            autoComplete="new-password"
             value={current}
             onChange={(event) => {
               setCurrent(event.target.value);
