@@ -1,7 +1,7 @@
 "use client";
 
 import gsap from "gsap";
-import { Bot, Send, Sparkles, X } from "lucide-react";
+import { Bot, Send, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Alert, Button, Spinner } from "@/components/ui";
 import { ApiError } from "@/lib/api";
@@ -144,7 +144,7 @@ export function ChatWidget() {
         >
           <header className="flex items-center gap-2 border-b border-border px-4 py-3">
             <span className="flex size-7 items-center justify-center rounded-lg bg-brand/10 text-brand">
-              <Sparkles className="size-4" />
+              <Bot className="size-4" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-primary">Team assistant</p>
@@ -233,7 +233,7 @@ export function ChatWidget() {
                    bg-brand text-brand-foreground shadow-lg transition-colors hover:bg-brand-hover
                    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       >
-        {open ? <X className="size-5" /> : <Sparkles className="size-5" />}
+        {open ? <X className="size-6" /> : <Bot className="size-6" />}
       </button>
     </>
   );
