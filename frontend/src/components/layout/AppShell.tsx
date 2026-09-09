@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { Loading, Spinner } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { DURATION, EASE, RESTING, RISE, STAGGER, withMotion } from "@/lib/motion";
@@ -230,7 +231,15 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
       <aside
         ref={sidebar}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col overflow-x-hidden",
+          // Wider than the desktop rail on purpose: the drawer has no collapse
+          // control to make room for, and at 256px the longest label ("User
+          // management") and the wordmark were both hitting their ellipsis.
+          // max-w caps it on genuinely narrow screens so it can never end up
+          // wider than the viewport it is sliding into.
+          "fixed inset-y-0 left-0 z-40 flex w-72 max-w-[85vw] shrink-0 flex-col overflow-x-hidden",
+          // Back to the rail width once the collapse tween owns it; without
+          // this, desktop would paint at 288px for a frame before GSAP set it.
+          "lg:w-64",
           "border-r border-border bg-surface",
           // Pinned to the viewport rather than stretched to the page, so the
           // account footer stays reachable however long the page is.
@@ -245,28 +254,65 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
           data-rail-row-wide
           className="flex h-14 shrink-0 items-center gap-2 overflow-hidden px-3"
         >
-          <Link
-            href="/"
-            onClick={() => setMobileOpen(false)}
-            data-rail-label
-            className="min-w-0 flex-1 truncate whitespace-nowrap text-lg font-bold text-[#4f46e5]"
-          >
-            Weekly Reports
-          </Link>
+          {/* The drawer has no rail to collapse, so here the mark is only ever
+              decoration — the interactive version below is desktop-only. */}
+          <BrandMark className="size-7 shrink-0 lg:hidden" />
 
-          {/* One icon that rotates rather than two that swap: the rotation is
-              the state change made visible, and it cannot flicker mid-tween. */}
+          {/*
+            On desktop the mark doubles as the expand control. Collapsed, the
+            rail is 64px and fits exactly one 32px box, so the mark and a
+            chevron cannot both be shown — pointing at it swaps one for the
+            other instead. Expanded, the chevron on the right does the same
+            job, and this stays a second, more discoverable way in.
+
+            The crossfade is Tailwind's rather than GSAP's, which does not
+            break the one-engine-per-property rule this file opens with: the
+            collapse timeline drives width, row padding and label opacity,
+            and never touches the opacity of these two icons.
+          */}
           <button
             type="button"
             onClick={() => setCollapsed((open) => !open)}
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-expanded={!collapsed}
+            className="group relative hidden size-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-surface-muted lg:inline-flex"
+          >
+            <BrandMark className="size-7 transition-opacity duration-200 group-hover:opacity-0" />
+            <ChevronsLeft
+              aria-hidden
+              className={cn(
+                "absolute size-4 text-secondary opacity-0 transition-opacity duration-200 group-hover:opacity-100",
+                collapsed && "rotate-180",
+              )}
+            />
+          </button>
+
+          <Link
+            href="/"
+            onClick={() => setMobileOpen(false)}
+            data-rail-label
+            className="min-w-0 flex-1 truncate whitespace-nowrap text-lg font-bold text-brand"
+          >
+            Weekly Reports
+          </Link>
+
+          {/*
+            data-rail-label, so the collapse timeline fades this and takes it
+            out of layout along with the text: at 64px the rail holds one
+            control, and that control is the mark. It is therefore only ever
+            seen expanded, which is why it needs no rotated state.
+          */}
+          <button
+            type="button"
+            onClick={() => setCollapsed((open) => !open)}
+            title="Collapse sidebar"
+            aria-label="Collapse sidebar"
+            aria-expanded={!collapsed}
+            data-rail-label
             className="hidden size-8 shrink-0 items-center justify-center rounded-lg text-secondary transition hover:bg-surface-muted hover:text-primary lg:inline-flex"
           >
-            <ChevronsLeft
-              className={cn("size-4 transition-transform duration-300", collapsed && "rotate-180")}
-            />
+            <ChevronsLeft className="size-4" />
           </button>
 
           <button
