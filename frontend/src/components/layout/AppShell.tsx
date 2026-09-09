@@ -4,12 +4,12 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import {
   BarChart3,
-  ChevronsLeft,
   ClipboardList,
   FolderKanban,
   LayoutDashboard,
   LogOut,
   Menu,
+  PanelRightOpen,
   Settings,
   ShieldCheck,
   Users,
@@ -279,7 +279,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
             className="group relative hidden size-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-surface-muted lg:inline-flex"
           >
             <BrandMark className="size-7 transition-opacity duration-200 group-hover:opacity-0" />
-            <ChevronsLeft
+            <PanelRightOpen
               aria-hidden
               className={cn(
                 "absolute size-4 text-secondary opacity-0 transition-opacity duration-200 group-hover:opacity-100",
@@ -312,7 +312,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
             data-rail-label
             className="hidden size-8 shrink-0 items-center justify-center rounded-lg text-secondary transition hover:bg-surface-muted hover:text-primary lg:inline-flex"
           >
-            <ChevronsLeft className="size-4" />
+            <PanelRightOpen className="size-4" />
           </button>
 
           <button
