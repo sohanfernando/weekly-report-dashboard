@@ -179,8 +179,17 @@ export default function DashboardPage() {
                   <Td label="Submitted" className="text-secondary">
                     {row.submittedAt ? relative(row.submittedAt) : "—"}
                   </Td>
+                  {/*
+                    A draft has a report id but is not openable by anyone except
+                    its author — the API answers 404, deliberately, so a manager
+                    cannot even probe for its existence. Offering a link here
+                    meant offering one that always led to "Report not found",
+                    which reads as a broken page rather than as the access rule
+                    it actually is. The row still reports the draft in its status
+                    column; there is simply nothing for a manager to open.
+                  */}
                   <Td className="text-right">
-                    {row.reportId ? (
+                    {row.reportId && row.state !== "DRAFT" ? (
                       <Link
                         href={
                           row.state === "SUBMITTED"
