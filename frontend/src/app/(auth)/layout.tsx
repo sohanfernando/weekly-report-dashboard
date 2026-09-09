@@ -1,19 +1,16 @@
-import { CheckCircle2, Clock3, FileEdit } from "lucide-react";
 import Link from "next/link";
-import type { ComponentType, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { cn } from "@/lib/cn";
 
 /**
  * Split frame for sign in and registration: a branded panel on the left, the
  * form on the right.
  *
- * The panel carries no photography. Its one graphic element is the product's
- * own status vocabulary — draft, submitted, approved — staged as a small
- * offset card stack, in the same shape as the app's own StatusBadge. A
- * marketing panel that foreshadows the actual UI earns its place better than
- * a generic illustration would; it is also literally what this product does,
- * which a stock drawing of "someone at a desk" is not.
+ * The panel carries no photography and no illustrative graphic — colour is
+ * the only decoration, from two soft blurred fields in brand and
+ * approved-green (see the glow layer below), and the brand lockup itself is
+ * sized up to be the panel's visual anchor rather than a small corner detail
+ * competing with that colour for attention.
  *
  * The panel is one deliberately dark surface, independent of the light
  * palette declared in globals.css and not conditioned on
@@ -51,32 +48,17 @@ export default function AuthLayout({ children }: Readonly<{ children: ReactNode 
           behind it.
         */}
         <div className="relative flex h-full flex-col justify-between px-10 py-10 xl:px-14 xl:py-12">
-          <Link href="/" className="inline-flex items-center gap-2.5" aria-label="Weekly Reports">
-            <BrandMark />
-            <span className="text-lg font-bold">Weekly Reports</span>
+          {/*
+            The lockup is the panel's one visual anchor, so it is sized well
+            past its usual small-corner scale: size-11 next to text-2xl,
+            rather than the size-8/text-lg pairing used everywhere else the
+            mark appears (the app sidebar, and the mobile-only row on the auth
+            pages themselves, where the panel is hidden).
+          */}
+          <Link href="/" className="inline-flex items-center gap-3" aria-label="Weekly Reports">
+            <BrandMark className="size-11 shrink-0" />
+            <span className="text-2xl font-bold">Weekly Reports</span>
           </Link>
-
-          <div className="flex flex-1 items-center">
-            <div className="relative h-56 w-full max-w-xs">
-              <StatusChip
-                icon={FileEdit}
-                label="Draft saved"
-                className="left-0 top-0 -rotate-3 border-white/15 bg-white/10 text-white/70"
-              />
-              <StatusChip
-                icon={Clock3}
-                label="Submitted for review"
-                className="left-6 top-20 rotate-2 border-status-submitted/30 bg-status-submitted/15
-                           text-status-submitted"
-              />
-              <StatusChip
-                icon={CheckCircle2}
-                label="Approved"
-                className="left-2 top-40 -rotate-1 border-status-approved/30 bg-status-approved/15
-                           text-status-approved"
-              />
-            </div>
-          </div>
 
           <div className="max-w-md">
             <p className="text-4xl font-extrabold leading-[1.05] tracking-tight xl:text-5xl">
@@ -92,33 +74,17 @@ export default function AuthLayout({ children }: Readonly<{ children: ReactNode 
         </div>
       </aside>
 
-      <main className="flex min-h-dvh flex-1 items-center justify-center px-4 py-10 sm:px-8 lg:min-h-0">
+      {/*
+        lg:min-h-[calc(100dvh-2rem)] matches the aside's own lg:h-[...] exactly
+        — same gutter math, same result. min-h-0 here (or leaving the base
+        min-h-dvh unmatched to the gutter) would give this column no real
+        height to centre within at lg, and items-center/justify-center would
+        have nothing to act on: the form would sit flush at the top instead
+        of centred in the column.
+      */}
+      <main className="flex min-h-dvh flex-1 items-center justify-center px-4 py-10 sm:px-8 lg:min-h-[calc(100dvh-2rem)]">
         <div className="w-full max-w-sm">{children}</div>
       </main>
-    </div>
-  );
-}
-
-/** One card in the status stack. Absolutely positioned; `className` places and rotates it. */
-function StatusChip({
-  icon: Icon,
-  label,
-  className,
-}: {
-  icon: ComponentType<{ className?: string }>;
-  label: string;
-  className?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "absolute inline-flex items-center gap-2 whitespace-nowrap rounded-xl border px-4 py-3",
-        "text-sm font-medium shadow-lg shadow-black/20 backdrop-blur-sm",
-        className,
-      )}
-    >
-      <Icon className="size-4" />
-      {label}
     </div>
   );
 }

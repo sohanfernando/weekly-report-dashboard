@@ -61,7 +61,7 @@ function LoginForm() {
         aria-label="Weekly Reports"
       >
         <BrandMark className="size-7 shrink-0" />
-        <span className="text-base font-bold text-brand">Weekly Reports</span>
+        <span className="text-xl font-bold text-brand">Weekly Reports</span>
       </Link>
 
       <div className="mb-8">
