@@ -30,7 +30,10 @@ spring:
     locations: classpath:db/migration
 
 server:
-  port: 8080
+  # A host that assigns the port — Render, Heroku, Cloud Run — passes it as
+  # $PORT and routes to nothing else. Locally PORT is unset, so this stays
+  # 8080 and nothing about running it on a laptop changes.
+  port: ${PORT:8080}
 
 management:
   endpoints:
