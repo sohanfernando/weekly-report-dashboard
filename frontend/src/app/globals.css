@@ -64,6 +64,54 @@
 
   /* Inter is the only family. next/font sets --font-inter on <html>. */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /*
+   * Landing page motion. Declared here so they exist as animate-* utilities;
+   * every use is behind motion-safe:, so reduced-motion visitors get the
+   * finished page with nothing moving. The app itself uses GSAP and the
+   * tokens in lib/motion.ts, not these.
+   */
+  --animate-rise: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-travel: travel 3.2s linear infinite;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes travel {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(400%);
+    }
+  }
+}
+
+/* The landing page's in-page links scroll rather than jump. Scoped with :has
+   so the app keeps instant scrolling everywhere else. */
+@media (prefers-reduced-motion: no-preference) {
+  html:has([data-landing]) {
+    scroll-behavior: smooth;
+  }
 }
 
 body {

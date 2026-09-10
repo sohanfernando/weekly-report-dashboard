@@ -288,8 +288,13 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
             />
           </button>
 
+          {/*
+            The wordmark goes to the user's own starting page, not to "/":
+            that is the public landing page, and a signed-in user clicking
+            their app's name expects to stay in the app.
+          */}
           <Link
-            href="/"
+            href={user.role === "MANAGER" ? "/dashboard" : "/reports"}
             onClick={() => setMobileOpen(false)}
             data-rail-label
             className="min-w-0 flex-1 truncate whitespace-nowrap text-lg font-bold text-brand"
