@@ -25,7 +25,8 @@ npm install
 npm run dev
 ```
 
-Then open <http://localhost:3000>.
+Then open <http://localhost:3000> — the landing page — and sign in with one of
+the accounts below.
 
 On first run the backend creates the schema, seeds a demo dataset, and prints
 `Demo seed complete` in the log.
@@ -60,7 +61,43 @@ Maven is **not** required — the repository ships the Maven wrapper (`mvnw`).
 
 ---
 
-## 1. Running the database
+## Setup instructions
+
+Four steps: install the dependencies, then start the database, the backend and
+the frontend. The sections below go in the order you would start things, which
+is why the database comes before the frontend. The [Quick start](#quick-start)
+above is the same thing, condensed.
+
+## 1. Installing dependencies
+
+**Frontend** — the npm packages:
+
+```bash
+cd frontend
+npm install
+```
+
+**Backend** — nothing to install by hand. The Maven wrapper downloads Maven
+itself and every dependency in `pom.xml` the first time it runs. To fetch them
+up front without starting anything:
+
+```bash
+cd backend
+./mvnw dependency:resolve       # Windows: .\mvnw.cmd dependency:resolve
+```
+
+**Database** — nothing to install either. MySQL runs in Docker, and the
+`mysql:8.4` image is pulled the first time the container starts. To pull it
+ahead of time:
+
+```bash
+cd backend
+docker compose pull
+```
+
+---
+
+## 2. Running the database
 
 The backend starts MySQL for you. `spring-boot-docker-compose` finds
 `backend/compose.yaml` on startup, launches the container and wires the
@@ -106,7 +143,7 @@ SELECT * FROM flyway_schema_history;
 
 ---
 
-## 2. Running the backend
+## 3. Running the backend
 
 ```bash
 cd backend
@@ -147,15 +184,23 @@ Everything in `application.yaml` can be overridden by environment variable.
 
 ---
 
-## 3. Running the frontend
+## 4. Running the frontend
 
 ```bash
 cd frontend
-npm install
+npm install        # skip if already done in step 1
 npm run dev
 ```
 
-Runs on <http://localhost:3000>.
+Runs on <http://localhost:3000>, which opens the landing page; **Sign in** and
+**Get started** are at the top right.
+
+A production build instead:
+
+```bash
+npm run build
+npm run start
+```
 
 The frontend calls the API through a Next.js rewrite, so the browser sees a
 single origin. That keeps the session cookie first-party and means no CORS
@@ -245,7 +290,7 @@ weekly-report-dashboard/
 └── frontend/
     └── src/
         ├── app/          App Router pages
-        ├── components/   reusable UI, report widgets, charts
+        ├── components/   reusable UI, report widgets, charts, landing page
         └── lib/          API client, query hooks, shared types
 ```
 
@@ -378,7 +423,7 @@ and the health check requires a session.
 
 | Method | Path | Who |
 | --- | --- | --- |
-| `POST` | `/auth/register` | anyone — always creates a MEMBER |
+| `POST` | `/auth/register` | anyone — MEMBER unless MANAGER is chosen |
 | `POST` | `/auth/login` | anyone |
 | `POST` | `/auth/logout` | anyone |
 | `GET` | `/auth/me` | authenticated |
